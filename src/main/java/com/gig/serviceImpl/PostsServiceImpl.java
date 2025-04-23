@@ -4,6 +4,7 @@ import com.gig.dto.BaseResponseDto;
 import com.gig.dto.CommentsDto;
 import com.gig.dto.CreatePostDto;
 import com.gig.dto.PostDto;
+import com.gig.dto.TaggedMemberDto;
 import com.gig.mappers.PostMapper;
 import com.gig.models.Comments;
 import com.gig.models.Likes;
@@ -19,11 +20,16 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import static com.gig.applicationUtilities.ApplicationConstants.COMMENT_ADDED;
 import static com.gig.applicationUtilities.ApplicationConstants.LIKED;
 import static com.gig.applicationUtilities.ApplicationConstants.POST_CREATED;
 import static com.gig.applicationUtilities.ApplicationConstants.POST_UPDATED;
 import static com.gig.applicationUtilities.ApplicationConstants.UNLIKE;
+import static org.apache.commons.collections4.CollectionUtils.emptyIfNull;
 
 @Service
 public class PostsServiceImpl implements PostService {
@@ -45,7 +51,15 @@ public class PostsServiceImpl implements PostService {
     public BaseResponseDto createPost(CreatePostDto createPostDto, Member member) {
         BaseResponseDto responseDto = new BaseResponseDto();
         try{
-            Posts posts = PostMapper.INSTANCE.dtoToEntity(createPostDto);
+            Posts posts = new Posts();
+            posts.setDescription(createPostDto.getDescription());
+            posts.setLocation(createPostDto.getLocation());
+            Set<Member> taggedMembers = emptyIfNull(createPostDto.getTaggedMembers())
+                    .stream()
+                    .map(tagId -> memberRepository.findByIdAndIsDeleted(tagId.toString(), false))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            posts.setTaggedMembers(taggedMembers);
             posts.setCreatedBy(member.getId());
             posts.setMember(member);
             postsRepository.save(posts);
@@ -72,6 +86,16 @@ public class PostsServiceImpl implements PostService {
         PostDto postDto = new PostDto();
         try {
             postDto = PostMapper.INSTANCE.entityToDto(posts);
+            Set<TaggedMemberDto> taggedMemberDto = emptyIfNull(posts.getTaggedMembers())
+                    .stream().map(tag -> memberRepository.findByIdAndIsDeleted(tag.getId().toString(), false))
+                    .filter(Objects::nonNull).map(member -> {
+                        TaggedMemberDto dto = new TaggedMemberDto();
+                        dto.setId(member.getId());
+                        dto.setName(member.getFirstName() + " " + member.getLastName());
+                        dto.setImageUrl(member.getImageUrl());
+                        return dto;
+                    }).collect(Collectors.toSet());
+            postDto.setTaggedMembers(taggedMemberDto);
             Member member = memberRepository.findByIdAndIsDeleted(posts.getMember().getId().toString(), false);
             if (ObjectUtils.isNotEmpty(member)) {
                 postDto.setMemberId(member.getId().toString());
