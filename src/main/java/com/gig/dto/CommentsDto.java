@@ -13,4 +13,5 @@ public class CommentsDto extends BaseResponseDto {
     private String memberId;
     private String username;
     private String profileUrl;
+    private String imageUrl;
 }

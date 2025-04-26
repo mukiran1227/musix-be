@@ -22,6 +22,7 @@ public class Comments extends BaseEntity{
     @JdbcTypeCode(Types.VARCHAR)
     private UUID id;
     private String description;
+    private String imageUrl;
     @ManyToOne
     private Member member;
 }

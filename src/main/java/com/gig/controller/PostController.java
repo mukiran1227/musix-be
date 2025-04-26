@@ -73,4 +73,9 @@ public class PostController {
     public ResponseEntity<PaginationDto> getLoggedInUserPosts(@RequestParam(value = "limit") int limit, @RequestParam(value = "offset") int offset, HttpServletRequest request){
         return postFacade.getLoggedInUserPosts(limit,offset,request);
     }
+
+    @GetMapping("/comments/postId")
+    public ResponseEntity<PaginationDto> getCommentsByPostId(@RequestParam(value = "postId") String postId,@RequestParam(value = "limit") int limit , @RequestParam(value = "offset") int offset,HttpServletRequest request){
+        return postFacade.getCommentsByPostId(postId,limit,offset,request);
+    }
 }

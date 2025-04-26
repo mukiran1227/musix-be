@@ -105,6 +105,7 @@ public class LoginServiceImpl implements LoginService {
             saveLoginDetails(httpServletRequest, login, member);
         }catch (Exception ex){
             ex.printStackTrace();
+            throw new ApiException(ex.getLocalizedMessage());
         }
         return login;
     }

@@ -24,4 +24,6 @@ public interface PostFacade {
     ResponseEntity<PaginationDto> getAllPosts(int limit, int offset,HttpServletRequest request);
 
     ResponseEntity<PaginationDto> getLoggedInUserPosts(int limit, int offset,HttpServletRequest request);
+
+    ResponseEntity<PaginationDto> getCommentsByPostId(String postId, int limit, int offset, HttpServletRequest request);
 }

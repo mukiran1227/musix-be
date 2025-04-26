@@ -6,6 +6,7 @@ import com.gig.dto.CreatePostDto;
 import com.gig.dto.PostDto;
 import com.gig.dto.TaggedMemberDto;
 import com.gig.mappers.PostMapper;
+import com.gig.models.Attachments;
 import com.gig.models.Comments;
 import com.gig.models.Likes;
 import com.gig.models.Member;
@@ -17,9 +18,11 @@ import com.gig.repository.PostsRepository;
 import com.gig.service.PostService;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -54,6 +57,13 @@ public class PostsServiceImpl implements PostService {
             Posts posts = new Posts();
             posts.setDescription(createPostDto.getDescription());
             posts.setLocation(createPostDto.getLocation());
+            List<Attachments> attachmentsList = emptyIfNull(createPostDto.getAttachments()).stream()
+                    .map(dto -> {
+                        Attachments attachment = new Attachments();
+                        BeanUtils.copyProperties(dto, attachment);
+                        return attachment;
+                    }).toList();
+            posts.setAttachments(attachmentsList);
             Set<Member> taggedMembers = emptyIfNull(createPostDto.getTaggedMembers())
                     .stream()
                     .map(tagId -> memberRepository.findByIdAndIsDeleted(tagId.toString(), false))
@@ -169,6 +179,7 @@ public class PostsServiceImpl implements PostService {
             if(ObjectUtils.isNotEmpty(posts)) {
                 Comments comments = new Comments();
                 comments.setDescription(commentsDto.getDescription());
+                comments.setImageUrl(commentsDto.getImageUrl());
                 comments.setMember(member);
                 commentsRepository.save(comments);
                 posts.getComments().add(comments);

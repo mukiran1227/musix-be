@@ -7,19 +7,24 @@ import com.gig.dto.CreatePostDto;
 import com.gig.dto.PaginationDto;
 import com.gig.dto.PostDto;
 import com.gig.facade.PostFacade;
+import com.gig.models.Comments;
 import com.gig.models.Member;
 import com.gig.models.Posts;
+import com.gig.repository.CommentsRepository;
+import com.gig.repository.MemberRepository;
 import com.gig.repository.PostsRepository;
 import com.gig.service.PostService;
 import com.gig.serviceImpl.PostsServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.gig.applicationUtilities.ApplicationConstants.NO_ACCESS_TO_DELETE;
@@ -41,6 +46,12 @@ public class PostFacadeImpl implements PostFacade {
 
     @Autowired
     private PostsRepository postsRepository;
+
+    @Autowired
+    private CommentsRepository commentsRepository;
+
+    @Autowired
+    private MemberRepository memberRepository;
 
     @Override
     public ResponseEntity<BaseResponseDto> createPost(CreatePostDto createPostDto, HttpServletRequest request) {
@@ -176,6 +187,39 @@ public class PostFacadeImpl implements PostFacade {
             ex.printStackTrace();
             paginationDto.setMessage(ex.getMessage());
             return new ResponseEntity<>(paginationDto,HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(paginationDto,HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<PaginationDto> getCommentsByPostId(String postId, int limit, int offset, HttpServletRequest request) {
+        PaginationDto paginationDto = new PaginationDto();
+        List<CommentsDto> commentsDtoList = new ArrayList<>();
+        try{
+            applicationUtilities.getLoggedInUser(request);
+            List<Comments> comments = commentsRepository.findByPostId(postId,limit,offset);
+            emptyIfNull(comments).forEach(comment->{
+                CommentsDto commentsDto = new CommentsDto();
+                BeanUtils.copyProperties(comment,commentsDto);
+                Member member = memberRepository.findByIdAndIsDeleted(comment.getMember().getId().toString(), false);
+                if (ObjectUtils.isNotEmpty(member)) {
+                    commentsDto.setUsername(member.getFirstName()+" "+member.getLastName());
+                    commentsDto.setMemberId(member.getId().toString());
+                    commentsDto.setProfileUrl(member.getImageUrl());
+                }
+                commentsDtoList.add(commentsDto);
+                paginationDto.setCommentsDto(commentsDtoList);
+                paginationDto.setTotalCount(commentsDtoList.size());
+                paginationDto.setPerPageCount(commentsRepository.findCommentCount(postId));
+            });
+        }catch (Exception ex){
+            ex.printStackTrace();
+            CommentsDto commentsDto = new CommentsDto();
+            commentsDto.setMessage(ex.getMessage());
+            commentsDtoList.add(commentsDto);
+            paginationDto.setCommentsDto(commentsDtoList);
+            return new ResponseEntity<>(paginationDto,HttpStatus.BAD_REQUEST);
+
         }
         return new ResponseEntity<>(paginationDto,HttpStatus.OK);
     }
