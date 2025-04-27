@@ -16,7 +16,7 @@ public interface PostsRepository extends JpaRepository<Posts, UUID> {
     Posts findByPostId(@Param("id") String id, @Param("isFalse") boolean isFalse);
 
     @Query(value = "select * from posts p where p.is_deleted=false ORDER BY p.created_at DESC  limit :limit offset :offset ",nativeQuery = true)
-    List<Posts> findAllPosts(@Param("limit") int limit, @Param("offset") int offset);
+    List<Posts> findAllPostsLimit(@Param("limit") int limit, @Param("offset") int offset);
 
     @Query(value = "select * from posts p where p.member_id=:memberId and p.is_deleted=false ORDER BY p.created_at DESC  limit :limit offset :offset",nativeQuery = true)
     List<Posts> findByMemberId(@Param("memberId") String memberId,@Param("limit") int limit, @Param("offset") int offset);
@@ -26,4 +26,7 @@ public interface PostsRepository extends JpaRepository<Posts, UUID> {
 
     @Query(value = "select count(p.id) from posts p where p.is_deleted=false ",nativeQuery = true)
     int findAllPostsCount();
+
+    @Query(value = "select * from posts p where p.is_deleted=false ORDER BY p.created_at DESC ",nativeQuery = true)
+    List<Posts> findAllPosts();
 }

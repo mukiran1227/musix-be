@@ -154,12 +154,17 @@ public class PostFacadeImpl implements PostFacade {
         PaginationDto paginationDto = new PaginationDto();
         try {
             Member loggedInMember = applicationUtilities.getLoggedInUser(request);
-            List<Posts> posts = postsRepository.findAllPosts(limit,offset);
+            List<Posts> posts;
+            if(limit>0) {
+                posts = postsRepository.findAllPostsLimit(limit, offset);
+            }else {
+                posts = postsRepository.findAllPosts();
+            }
             List<PostDto> postDtoList = emptyIfNull(posts).stream()
                         .map(post -> postsServiceImpl.setPostDetails(loggedInMember, post))
                         .toList();
-            if(CollectionUtils.isNotEmpty(postDtoList)){
-                paginationDto.setPostDto(postDtoList);
+            paginationDto.setPostDto(postDtoList);
+            if(limit>0){
                 paginationDto.setPerPageCount(postDtoList.size());
                 paginationDto.setTotalCount(postsRepository.findAllPostsCount());
             }
@@ -197,7 +202,13 @@ public class PostFacadeImpl implements PostFacade {
         List<CommentsDto> commentsDtoList = new ArrayList<>();
         try{
             applicationUtilities.getLoggedInUser(request);
-            List<Comments> comments = commentsRepository.findByPostId(postId,limit,offset);
+            List<Comments> comments = null;
+            if (limit > 0) {
+                comments = commentsRepository.findByPostIdLimit(postId,limit,offset);
+            }
+            else {
+                comments = commentsRepository.findByPostId(postId);
+            }
             emptyIfNull(comments).forEach(comment->{
                 CommentsDto commentsDto = new CommentsDto();
                 BeanUtils.copyProperties(comment,commentsDto);
@@ -209,8 +220,10 @@ public class PostFacadeImpl implements PostFacade {
                 }
                 commentsDtoList.add(commentsDto);
                 paginationDto.setCommentsDto(commentsDtoList);
-                paginationDto.setTotalCount(commentsDtoList.size());
-                paginationDto.setPerPageCount(commentsRepository.findCommentCount(postId));
+                if(limit>0) {
+                    paginationDto.setTotalCount(commentsDtoList.size());
+                    paginationDto.setPerPageCount(commentsRepository.findCommentCount(postId));
+                }
             });
         }catch (Exception ex){
             ex.printStackTrace();

@@ -16,6 +16,7 @@ public interface CommentsRepository extends JpaRepository<Comments, UUID> {
     int findCommentCount(@Param("postId") String postId);
 
     @Query(value = "SELECT c.* FROM comments c INNER JOIN posts_comments pc ON c.id = pc.comments_id WHERE pc.posts_id = :postId AND c.is_deleted = false ORDER BY c.created_at DESC LIMIT :limit OFFSET :offset", nativeQuery = true)
-    List<Comments> findByPostId(@Param("postId") String postId, @Param("limit") int limit, @Param("offset") int offset);
-
+    List<Comments> findByPostIdLimit(@Param("postId") String postId, @Param("limit") int limit, @Param("offset") int offset);
+    @Query(value = "SELECT c.* FROM comments c INNER JOIN posts_comments pc ON c.id = pc.comments_id WHERE pc.posts_id = :postId AND c.is_deleted = false ORDER BY c.created_at DESC ", nativeQuery = true)
+    List<Comments> findByPostId(@Param("postId") String postId);
 }
