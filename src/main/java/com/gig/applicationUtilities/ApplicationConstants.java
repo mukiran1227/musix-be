@@ -55,5 +55,7 @@ public class ApplicationConstants {
 
     public static final String COMMENT_ADDED = "Comment added successfully";
 
+    public static final String FOLLOWER = "FOLLOWER";
+
 
 }

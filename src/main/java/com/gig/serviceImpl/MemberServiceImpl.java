@@ -3,14 +3,18 @@ package com.gig.serviceImpl;
 import com.gig.applicationUtilities.ApplicationConstants;
 import com.gig.applicationUtilities.ApplicationUtilities;
 import com.gig.config.EmailService;
+import com.gig.dto.BaseResponseDto;
 import com.gig.dto.ChangePasswordDto;
 import com.gig.dto.EmailDto;
 import com.gig.dto.RegistrationDto;
 import com.gig.exceptions.ApiException;
+import com.gig.models.Follow;
 import com.gig.models.Member;
+import com.gig.repository.FollowRepository;
 import com.gig.repository.MemberRepository;
 import com.gig.service.MemberService;
 import jakarta.transaction.Transactional;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +22,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.thymeleaf.context.Context;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static com.gig.applicationUtilities.ApplicationConstants.MEMBER_REGISTRATION_SUCCESSFULLY;
 import static com.gig.applicationUtilities.ApplicationConstants.NEW_PASSWORD_AND_CONFIRM_NEW_PASSWORD_ARE_NOT_MATCHING;
@@ -35,6 +42,9 @@ public class MemberServiceImpl implements MemberService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private FollowRepository followRepository;
 
     @Override
     @Transactional(rollbackOn = {Exception.class, ApiException.class})
@@ -70,6 +80,39 @@ public class MemberServiceImpl implements MemberService {
             e.printStackTrace();
             throw new ApiException(e.getLocalizedMessage());
         }
+    }
+
+    @Override
+    public BaseResponseDto followOrUnfollow(String memberId, Member loggedInMember) {
+        BaseResponseDto responseDto = new BaseResponseDto();
+        try{
+            Follow follow = followRepository.findByFollowerAndFollowed(loggedInMember.getId().toString(), memberId);
+            if(ObjectUtils.isEmpty(follow)){
+                Follow newFollower = new Follow();
+                newFollower.setFollower(loggedInMember.getId());
+                newFollower.setFollowed(UUID.fromString(memberId));
+                newFollower.setCreatedBy(loggedInMember.getId());
+                followRepository.save(newFollower);
+                responseDto.setMessage("You are now following "+newFollower.getFollowed()+".");
+            }else if(BooleanUtils.isTrue(follow.getIsDeleted())){
+                follow.setIsDeleted(false);
+                follow.setUpdateTimestamp(LocalDateTime.now());
+                follow.setUpdatedBy(loggedInMember.getId());
+                followRepository.save(follow);
+                responseDto.setMessage("You are now following "+memberId+".");
+            }
+            else {
+                follow.setIsDeleted(true);
+                follow.setUpdateTimestamp(LocalDateTime.now());
+                follow.setUpdatedBy(loggedInMember.getId());
+                followRepository.save(follow);
+                responseDto.setMessage("You have unfollowed "+memberId+".");
+            }
+        }catch (Exception ex){
+            ex.printStackTrace();
+            throw new ApiException(ex.getLocalizedMessage());
+        }
+        return responseDto;
     }
 
     public Boolean isPasswordMatch(String password, String reCheckPassword) {

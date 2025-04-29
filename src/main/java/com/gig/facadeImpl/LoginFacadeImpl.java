@@ -1,8 +1,8 @@
 package com.gig.facadeImpl;
 
-import com.gig.applicationUtilities.ApplicationConstants;
 import com.gig.applicationUtilities.ApplicationUtilities;
 import com.gig.dto.BaseResponseDto;
+import com.gig.dto.CraftDto;
 import com.gig.dto.ForgotPasswordDto;
 import com.gig.dto.LoginDto;
 import com.gig.dto.LoginResponseDto;
@@ -10,8 +10,10 @@ import com.gig.dto.ResetPasswordDto;
 import com.gig.dto.VerifyRequestDto;
 import com.gig.exceptions.ApiException;
 import com.gig.facade.LoginFacade;
+import com.gig.models.Craft;
 import com.gig.models.Login;
 import com.gig.models.Member;
+import com.gig.repository.CraftRepository;
 import com.gig.repository.MemberRepository;
 import com.gig.service.LoginService;
 import io.jsonwebtoken.lang.Assert;
@@ -26,6 +28,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -41,6 +44,7 @@ import static com.gig.applicationUtilities.ApplicationConstants.PASSWORDS_DO_NOT
 import static com.gig.applicationUtilities.ApplicationConstants.PASSWORD_CHANGED;
 import static com.gig.applicationUtilities.ApplicationConstants.SUCCESS;
 import static com.gig.applicationUtilities.ApplicationConstants.USER_DOES_NOT_EXIST;
+import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 
 @Component
 public class LoginFacadeImpl implements LoginFacade {
@@ -55,6 +59,9 @@ public class LoginFacadeImpl implements LoginFacade {
 
     @Autowired
     private ApplicationUtilities applicationUtilities;
+
+    @Autowired
+    private CraftRepository craftRepository;
     
     @Override
     public ResponseEntity<LoginResponseDto> login(LoginDto loginDTO, HttpServletRequest httpServletRequest) {
@@ -138,6 +145,23 @@ public class LoginFacadeImpl implements LoginFacade {
             return new ResponseEntity<>(loginResponseDto,HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(loginResponseDto,HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<BaseResponseDto> createCraft(List<CraftDto> craftDto) {
+        BaseResponseDto responseDto = new BaseResponseDto();
+        try{
+            emptyIfNull(craftDto).forEach(craft ->{
+                Craft crafts = new Craft();
+                crafts.setName(craft.getName());
+                craftRepository.save(crafts);
+            });
+        }catch (Exception ex){
+            ex.printStackTrace();
+            responseDto.setMessage(ex.getMessage());
+            return new ResponseEntity<>(responseDto,HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(responseDto,HttpStatus.OK);
     }
 
     public LoginResponseDto setPassword(ResetPasswordDto resetPasswordDto, HttpServletRequest httpServletRequest, String emailAddress) {

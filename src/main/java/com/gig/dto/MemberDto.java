@@ -1,5 +1,6 @@
 package com.gig.dto;
 
+import jakarta.persistence.Column;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,5 +17,10 @@ public class MemberDto extends BaseResponseDto{
     private String craft;
     private String intentOfUse;
     private Boolean isVerified=Boolean.FALSE;
+    private int followersCount;
     private String imageUrl;
+    private String bio;
+    private String clientLookingFor;
+    private String artistLookingFor;
+    private String coverImageUrl;
 }

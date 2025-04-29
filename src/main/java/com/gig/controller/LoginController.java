@@ -1,6 +1,7 @@
 package com.gig.controller;
 
 import com.gig.dto.BaseResponseDto;
+import com.gig.dto.CraftDto;
 import com.gig.dto.ForgotPasswordDto;
 import com.gig.dto.LoginDto;
 import com.gig.dto.LoginResponseDto;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/auth/member")
@@ -55,4 +58,10 @@ public class LoginController {
     public ResponseEntity<LoginResponseDto> resetPassword(@RequestParam(value = "emailAddress") String emailAddress, @RequestBody ResetPasswordDto resetPasswordDto, HttpServletRequest httpServletRequest){
         return loginFacade.resetPassword(emailAddress, resetPasswordDto, httpServletRequest);
     }
+
+    @PostMapping("/create-craft")
+    public ResponseEntity<BaseResponseDto> createCraft(@RequestBody List<CraftDto> craftDto){
+        return loginFacade.createCraft(craftDto);
+    }
+
 }

@@ -2,6 +2,8 @@ package com.gig.controller;
 
 import com.gig.dto.BaseResponseDto;
 import com.gig.dto.ChangePasswordDto;
+import com.gig.dto.CraftDto;
+import com.gig.dto.FollowersDto;
 import com.gig.dto.MemberDto;
 import com.gig.dto.RegistrationDto;
 import com.gig.dto.RegistrationResponseDto;
@@ -21,9 +23,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 
 @RestController
 @RequestMapping("/member")
@@ -59,5 +63,20 @@ public class MemberController {
     @PostMapping("/update-password")
     public ResponseEntity<BaseResponseDto> updatePassword(@RequestBody ChangePasswordDto changePasswordDto, HttpServletRequest request) {
         return memberFacade.updatePassword(changePasswordDto, request);
+    }
+
+    @PostMapping("/followOrUnFollow")
+    public ResponseEntity<BaseResponseDto> followOrUnfollow(@RequestParam(value = "memberId") String memberId , HttpServletRequest request){
+        return memberFacade.followOrUnfollow(memberId,request);
+    }
+
+    @GetMapping("/fetchFollowerOrFollowingList")
+    public ResponseEntity<List<FollowersDto>> fetchFollowerOrFollowingList(@RequestParam(value = "type") String type , HttpServletRequest request){
+        return memberFacade.fetchFollowerOrFollowingList(type,request);
+    }
+
+    @GetMapping("/fetchAllCrafts")
+    public ResponseEntity<List<CraftDto>> getAllCrafts(HttpServletRequest request){
+        return memberFacade.getAllCrafts(request);
     }
 }

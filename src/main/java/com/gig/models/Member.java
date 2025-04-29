@@ -38,8 +38,17 @@ public class Member extends BaseEntity{
     private String intentOfUse;
     @Column(name = "is_verified")
     private Boolean isVerified=Boolean.FALSE;
-    @Column(name = "image_url")
+    @Column(name = "image_url",columnDefinition = "TEXT")
     private String imageUrl;
     @Column(name = "otp")
     private Integer otp;
+    @Column(name = "bio",columnDefinition = "TEXT")
+    private String bio;
+    @Column(name = "lookingFor",columnDefinition = "TEXT")
+    private String clientLookingFor;
+    @Column(name = "artistLookingFor",columnDefinition = "TEXT")
+    private String artistLookingFor;
+    @Column(name = "cover_image_url",columnDefinition = "TEXT")
+    private String coverImageUrl;
+
 }
