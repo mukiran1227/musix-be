@@ -8,10 +8,12 @@ import com.gig.dto.TaggedMemberDto;
 import com.gig.mappers.PostMapper;
 import com.gig.models.Attachments;
 import com.gig.models.Comments;
+import com.gig.models.Follow;
 import com.gig.models.Likes;
 import com.gig.models.Member;
 import com.gig.models.Posts;
 import com.gig.repository.CommentsRepository;
+import com.gig.repository.FollowRepository;
 import com.gig.repository.LikeRepository;
 import com.gig.repository.MemberRepository;
 import com.gig.repository.PostsRepository;
@@ -49,6 +51,9 @@ public class PostsServiceImpl implements PostService {
 
     @Autowired
     private CommentsRepository commentsRepository;
+
+    @Autowired
+    private FollowRepository followRepository;
 
     @Override
     public PostDto createPost(CreatePostDto createPostDto, Member member) {
@@ -120,6 +125,10 @@ public class PostsServiceImpl implements PostService {
             }
             int commentCount = commentsRepository.findCommentCount(posts.getId().toString());
             postDto.setCommentCount(commentCount);
+            Follow follow = followRepository.findByFollowerAndFollowed(loggedInMember.getId().toString(),member.getId().toString());
+            if(ObjectUtils.isNotEmpty(follow)){
+                postDto.setIsFollowing(true);
+            }
         }catch (Exception ex){
             ex.printStackTrace();
         }

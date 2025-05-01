@@ -25,4 +25,5 @@ public class PostDto extends BaseResponseDto{
     private int commentCount;
     private int shareCount;
     private Boolean isLiked = Boolean.FALSE;
+    private Boolean isFollowing = Boolean.FALSE;
 }

@@ -1,6 +1,7 @@
 package com.gig.models;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -30,6 +31,7 @@ public class Posts extends BaseEntity{
     @UuidGenerator
     @JdbcTypeCode(Types.VARCHAR)
     private UUID id;
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
     private String location;
     @OneToMany(cascade = CascadeType.ALL)
