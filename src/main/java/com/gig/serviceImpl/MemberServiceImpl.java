@@ -1,6 +1,5 @@
 package com.gig.serviceImpl;
 
-import com.gig.applicationUtilities.ApplicationConstants;
 import com.gig.applicationUtilities.ApplicationUtilities;
 import com.gig.config.EmailService;
 import com.gig.dto.BaseResponseDto;
@@ -18,7 +17,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.thymeleaf.context.Context;
@@ -83,13 +81,13 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public BaseResponseDto followOrUnfollow(String memberId, Member loggedInMember) {
+    public BaseResponseDto followOrUnfollow(String memberId, String followerId, Member loggedInMember) {
         BaseResponseDto responseDto = new BaseResponseDto();
         try{
-            Follow follow = followRepository.findByFollowerAndFollowed(loggedInMember.getId().toString(), memberId);
+            Follow follow = followRepository.findByFollowerAndFollowed(followerId, memberId);
             if(ObjectUtils.isEmpty(follow)){
                 Follow newFollower = new Follow();
-                newFollower.setFollower(loggedInMember.getId());
+                newFollower.setFollower(UUID.fromString(followerId));
                 newFollower.setFollowed(UUID.fromString(memberId));
                 newFollower.setCreatedBy(loggedInMember.getId());
                 followRepository.save(newFollower);
@@ -107,6 +105,23 @@ public class MemberServiceImpl implements MemberService {
                 follow.setUpdatedBy(loggedInMember.getId());
                 followRepository.save(follow);
                 responseDto.setMessage("You have unfollowed "+memberId+".");
+            }
+        }catch (Exception ex){
+            ex.printStackTrace();
+            throw new ApiException(ex.getLocalizedMessage());
+        }
+        return responseDto;
+    }
+
+    @Override
+    public BaseResponseDto removeFollower(String memberId, String loggedInMember) {
+        BaseResponseDto responseDto = new BaseResponseDto();
+        try{
+            Follow follow = followRepository.findByFollowerAndFollowed(memberId,loggedInMember);
+            if(ObjectUtils.isEmpty(follow)){
+                follow.setIsDeleted(true);
+                followRepository.save(follow);
+                responseDto.setMessage("You have removed the follower "+memberId);
             }
         }catch (Exception ex){
             ex.printStackTrace();

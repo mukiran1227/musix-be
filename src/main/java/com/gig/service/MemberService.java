@@ -10,5 +10,7 @@ public interface MemberService {
 
     void updatePassword(ChangePasswordDto changePasswordDto, Member member);
 
-    BaseResponseDto followOrUnfollow(String memberId, Member loggedInMember);
+    BaseResponseDto followOrUnfollow(String memberId, String followerId, Member loggedInMember);
+
+    BaseResponseDto removeFollower(String memberId, String loggedInMember);
 }

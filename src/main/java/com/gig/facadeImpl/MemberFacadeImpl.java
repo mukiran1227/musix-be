@@ -5,6 +5,7 @@ import com.gig.applicationUtilities.ApplicationConstants;
 import com.gig.applicationUtilities.ApplicationUtilities;
 import com.gig.dto.BaseResponseDto;
 import com.gig.dto.ChangePasswordDto;
+import com.gig.dto.CollaborationDto;
 import com.gig.dto.CraftDto;
 import com.gig.dto.FollowersDto;
 import com.gig.dto.MemberDto;
@@ -14,9 +15,11 @@ import com.gig.dto.UpdateMemberDto;
 import com.gig.exceptions.ApiException;
 import com.gig.facade.MemberFacade;
 import com.gig.mappers.MemberMapper;
+import com.gig.models.Collaboration;
 import com.gig.models.Craft;
 import com.gig.models.Login;
 import com.gig.models.Member;
+import com.gig.repository.CollaborationRepository;
 import com.gig.repository.CraftRepository;
 import com.gig.repository.FollowRepository;
 import com.gig.repository.MemberRepository;
@@ -24,6 +27,7 @@ import com.gig.service.LoginService;
 import com.gig.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -42,7 +46,6 @@ import static com.gig.applicationUtilities.ApplicationConstants.MEMBERSHIP_REGIS
 import static com.gig.applicationUtilities.ApplicationConstants.MEMBER_NOT_FOUND;
 import static com.gig.applicationUtilities.ApplicationConstants.PASSWORD_UPDATED_SUCCESSFULLY;
 import static com.gig.applicationUtilities.ApplicationConstants.USER_ALREADY_EXIST;
-import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 
 @Component
 @RequiredArgsConstructor
@@ -69,6 +72,9 @@ public class MemberFacadeImpl implements MemberFacade {
 
     @Autowired
     private CraftRepository craftRepository;
+
+    @Autowired
+    private CollaborationRepository collaborationRepository;
 
     private final Logger logger = LoggerFactory.getLogger(MemberFacadeImpl.class);
 
@@ -119,6 +125,17 @@ public class MemberFacadeImpl implements MemberFacade {
                     Craft craft = craftRepository.findByIdAndIsDeleted(memberDto.getCraft());
                     memberDto.setCraft(craft.getName());
                 }
+                List<Collaboration> collaborations = collaborationRepository.findByMemberId(memberDto.getId().toString());
+                if(CollectionUtils.isNotEmpty(collaborations)){
+                    List<CollaborationDto> collaborationDtoList = new ArrayList<>();
+                    collaborations.forEach(collaboration -> {
+                        CollaborationDto collaborationDto = new CollaborationDto();
+                        collaborationDto.setId(collaboration.getId());
+                        collaborationDto.setName(collaboration.getName());
+                        collaborationDtoList.add(collaborationDto);
+                    });
+                    memberDto.setCollaborationDto(collaborationDtoList);
+                }
             }
         }catch (Exception ex){
             ex.printStackTrace();
@@ -162,11 +179,11 @@ public class MemberFacadeImpl implements MemberFacade {
     }
 
     @Override
-    public ResponseEntity<BaseResponseDto> followOrUnfollow(String memberId, HttpServletRequest request) {
+    public ResponseEntity<BaseResponseDto> followOrUnfollow(String memberId, String followerId, HttpServletRequest request) {
         BaseResponseDto responseDto = new BaseResponseDto();
         try{
             Member loggedInMember  = applicationUtilities.getLoggedInUser(request);
-            responseDto = memberService.followOrUnfollow(memberId,loggedInMember);
+            responseDto = memberService.followOrUnfollow(memberId,followerId,loggedInMember);
         }catch (Exception ex){
             ex.printStackTrace();
             responseDto.setMessage(ex.getLocalizedMessage());
@@ -203,5 +220,19 @@ public class MemberFacadeImpl implements MemberFacade {
             return new ResponseEntity<>(craftDtoList,HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(craftDtoList,HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<BaseResponseDto> removeFollower(String memberId, HttpServletRequest request) {
+        BaseResponseDto responseDto = new BaseResponseDto();
+        try{
+            Member loggedInMember = applicationUtilities.getLoggedInUser(request);
+            responseDto = memberService.removeFollower(memberId,loggedInMember.getId().toString());
+        }catch (Exception ex){
+            ex.printStackTrace();
+            responseDto.setMessage(ex.getLocalizedMessage());
+            return new ResponseEntity<>(responseDto,HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(responseDto,HttpStatus.OK);
     }
 }

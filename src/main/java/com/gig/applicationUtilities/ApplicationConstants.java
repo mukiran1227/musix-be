@@ -57,5 +57,8 @@ public class ApplicationConstants {
 
     public static final String FOLLOWER = "FOLLOWER";
 
+    public static final String BRAND_PAGE_IS_CREATED = "Brand page is created";
+
+
 
 }

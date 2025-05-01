@@ -66,8 +66,8 @@ public class MemberController {
     }
 
     @PostMapping("/followOrUnFollow")
-    public ResponseEntity<BaseResponseDto> followOrUnfollow(@RequestParam(value = "memberId") String memberId , HttpServletRequest request){
-        return memberFacade.followOrUnfollow(memberId,request);
+    public ResponseEntity<BaseResponseDto> followOrUnfollow(@RequestParam(value = "memberId") String memberId ,@RequestParam(value = "followerId") String followerId, HttpServletRequest request){
+        return memberFacade.followOrUnfollow(memberId,followerId,request);
     }
 
     @GetMapping("/fetchFollowerOrFollowingList")
@@ -78,5 +78,10 @@ public class MemberController {
     @GetMapping("/fetchAllCrafts")
     public ResponseEntity<List<CraftDto>> getAllCrafts(HttpServletRequest request){
         return memberFacade.getAllCrafts(request);
+    }
+
+    @PostMapping("/remove-follower")
+    public ResponseEntity<BaseResponseDto> removeFollower(@RequestParam(value = "memberId") String memberId , HttpServletRequest request){
+        return memberFacade.removeFollower(memberId,request);
     }
 }

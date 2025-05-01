@@ -4,6 +4,8 @@ import jakarta.persistence.Column;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -23,4 +25,5 @@ public class MemberDto extends BaseResponseDto{
     private String clientLookingFor;
     private String artistLookingFor;
     private String coverImageUrl;
+    private List<CollaborationDto> collaborationDto = new ArrayList<>();
 }

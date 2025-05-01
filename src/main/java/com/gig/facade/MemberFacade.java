@@ -22,9 +22,11 @@ public interface MemberFacade {
 
     ResponseEntity<BaseResponseDto> updatePassword(ChangePasswordDto changePasswordDto, HttpServletRequest request);
 
-    ResponseEntity<BaseResponseDto> followOrUnfollow(String memberId, HttpServletRequest request);
+    ResponseEntity<BaseResponseDto> followOrUnfollow(String memberId, String followerId, HttpServletRequest request);
 
     ResponseEntity<List<FollowersDto>> fetchFollowerOrFollowingList(String type, HttpServletRequest request);
 
     ResponseEntity<List<CraftDto>> getAllCrafts(HttpServletRequest request);
+
+    ResponseEntity<BaseResponseDto> removeFollower(String memberId, HttpServletRequest request);
 }
