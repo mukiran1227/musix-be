@@ -51,8 +51,8 @@ public class PostsServiceImpl implements PostService {
     private CommentsRepository commentsRepository;
 
     @Override
-    public BaseResponseDto createPost(CreatePostDto createPostDto, Member member) {
-        BaseResponseDto responseDto = new BaseResponseDto();
+    public PostDto createPost(CreatePostDto createPostDto, Member member) {
+        PostDto responseDto = new PostDto();
         try{
             Posts posts = new Posts();
             posts.setDescription(createPostDto.getDescription());
@@ -73,7 +73,7 @@ public class PostsServiceImpl implements PostService {
             posts.setCreatedBy(member.getId());
             posts.setMember(member);
             postsRepository.save(posts);
-            responseDto.setMessage(POST_CREATED);
+            responseDto = setPostDetails(member,posts);
         }catch (Exception ex){
             ex.printStackTrace();
         }

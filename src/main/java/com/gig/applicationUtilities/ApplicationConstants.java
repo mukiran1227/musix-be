@@ -59,6 +59,8 @@ public class ApplicationConstants {
 
     public static final String BRAND_PAGE_IS_CREATED = "Brand page is created";
 
+    public static final String FOLLOWING = "FOLLOWING";
+
 
 
 }

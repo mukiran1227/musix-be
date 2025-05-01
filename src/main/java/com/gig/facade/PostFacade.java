@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 
 public interface PostFacade {
-    ResponseEntity<BaseResponseDto> createPost(CreatePostDto createPostDto, HttpServletRequest request);
+    ResponseEntity<PostDto> createPost(CreatePostDto createPostDto, HttpServletRequest request);
 
     ResponseEntity<PostDto> getPostById(String postId, HttpServletRequest request);
 

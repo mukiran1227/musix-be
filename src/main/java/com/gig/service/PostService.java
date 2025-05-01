@@ -8,7 +8,7 @@ import com.gig.models.Member;
 import com.gig.models.Posts;
 
 public interface PostService {
-    BaseResponseDto createPost(CreatePostDto createPostDto, Member member);
+    PostDto createPost(CreatePostDto createPostDto, Member member);
 
     PostDto getPost(String postId, Member loggedInMember);
 

@@ -35,7 +35,7 @@ public class PostController {
     private PostFacade postFacade;
 
     @PostMapping("/create-post")
-    public ResponseEntity<BaseResponseDto> createPost(@RequestBody CreatePostDto createPostDto , HttpServletRequest request){
+    public ResponseEntity<PostDto> createPost(@RequestBody CreatePostDto createPostDto , HttpServletRequest request){
         return postFacade.createPost(createPostDto,request);
     }
 

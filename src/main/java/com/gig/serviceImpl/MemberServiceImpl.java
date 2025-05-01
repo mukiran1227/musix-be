@@ -91,20 +91,20 @@ public class MemberServiceImpl implements MemberService {
                 newFollower.setFollowed(UUID.fromString(memberId));
                 newFollower.setCreatedBy(loggedInMember.getId());
                 followRepository.save(newFollower);
-                responseDto.setMessage("You are now following "+newFollower.getFollowed()+".");
+                responseDto.setMessage("You have started following");
             }else if(BooleanUtils.isTrue(follow.getIsDeleted())){
                 follow.setIsDeleted(false);
                 follow.setUpdateTimestamp(LocalDateTime.now());
                 follow.setUpdatedBy(loggedInMember.getId());
                 followRepository.save(follow);
-                responseDto.setMessage("You are now following "+memberId+".");
+                responseDto.setMessage("You have started following");
             }
             else {
                 follow.setIsDeleted(true);
                 follow.setUpdateTimestamp(LocalDateTime.now());
                 follow.setUpdatedBy(loggedInMember.getId());
                 followRepository.save(follow);
-                responseDto.setMessage("You have unfollowed "+memberId+".");
+                responseDto.setMessage("You have unfollowed ");
             }
         }catch (Exception ex){
             ex.printStackTrace();
@@ -118,10 +118,10 @@ public class MemberServiceImpl implements MemberService {
         BaseResponseDto responseDto = new BaseResponseDto();
         try{
             Follow follow = followRepository.findByFollowerAndFollowed(memberId,loggedInMember);
-            if(ObjectUtils.isEmpty(follow)){
+            if(ObjectUtils.isNotEmpty(follow)){
                 follow.setIsDeleted(true);
                 followRepository.save(follow);
-                responseDto.setMessage("You have removed the follower "+memberId);
+                responseDto.setMessage("You have removed the follower");
             }
         }catch (Exception ex){
             ex.printStackTrace();

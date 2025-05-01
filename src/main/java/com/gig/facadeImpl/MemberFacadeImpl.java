@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.gig.applicationUtilities.ApplicationConstants.FOLLOWER;
+import static com.gig.applicationUtilities.ApplicationConstants.FOLLOWING;
 import static com.gig.applicationUtilities.ApplicationConstants.MEMBERSHIP_REGISTERED_SUCCESSFULLY;
 import static com.gig.applicationUtilities.ApplicationConstants.MEMBER_NOT_FOUND;
 import static com.gig.applicationUtilities.ApplicationConstants.PASSWORD_UPDATED_SUCCESSFULLY;
@@ -199,7 +200,7 @@ public class MemberFacadeImpl implements MemberFacade {
             Member member = applicationUtilities.getLoggedInUser(request);
             if(FOLLOWER.equalsIgnoreCase(type)) {
                 followersDto = followRepository.fetchFollwerList(member.getId().toString());
-            }else {
+            }else if(FOLLOWING.equalsIgnoreCase(type)) {
                 followersDto = followRepository.fetchFollowingList(member.getId().toString());
             }
         }catch (Exception ex){

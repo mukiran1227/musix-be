@@ -54,8 +54,8 @@ public class PostFacadeImpl implements PostFacade {
     private MemberRepository memberRepository;
 
     @Override
-    public ResponseEntity<BaseResponseDto> createPost(CreatePostDto createPostDto, HttpServletRequest request) {
-        BaseResponseDto responseDto = new BaseResponseDto();
+    public ResponseEntity<PostDto> createPost(CreatePostDto createPostDto, HttpServletRequest request) {
+        PostDto responseDto = new PostDto();
         try{
             Member member = applicationUtilities.getLoggedInUser(request);
             responseDto = postService.createPost(createPostDto,member);
