@@ -124,7 +124,10 @@ public class MemberFacadeImpl implements MemberFacade {
                 memberDto.setFollowersCount(followerCount);
                 if(ObjectUtils.isNotEmpty(memberDto.getCraft())){
                     Craft craft = craftRepository.findByIdAndIsDeleted(memberDto.getCraft());
-                    memberDto.setCraft(craft.getName());
+                    if(ObjectUtils.isNotEmpty(craft)) {
+                        memberDto.setCraftId(craft.getId().toString());
+                        memberDto.setCraft(craft.getName());
+                    }
                 }
                 List<Collaboration> collaborations = collaborationRepository.findByMemberId(memberDto.getId().toString());
                 if(CollectionUtils.isNotEmpty(collaborations)){

@@ -17,6 +17,7 @@ public class MemberDto extends BaseResponseDto{
     private String emailAddress;
     private String city;
     private String craft;
+    private String craftId;
     private String intentOfUse;
     private Boolean isVerified=Boolean.FALSE;
     private int followersCount;
