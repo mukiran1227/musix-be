@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 
 import static com.gig.applicationUtilities.ApplicationConstants.COMMENT_ADDED;
 import static com.gig.applicationUtilities.ApplicationConstants.LIKED;
-import static com.gig.applicationUtilities.ApplicationConstants.POST_CREATED;
 import static com.gig.applicationUtilities.ApplicationConstants.POST_UPDATED;
 import static com.gig.applicationUtilities.ApplicationConstants.UNLIKE;
 import static org.apache.commons.collections4.CollectionUtils.emptyIfNull;
@@ -125,7 +124,7 @@ public class PostsServiceImpl implements PostService {
             }
             int commentCount = commentsRepository.findCommentCount(posts.getId().toString());
             postDto.setCommentCount(commentCount);
-            Follow follow = followRepository.findByFollowerAndFollowed(loggedInMember.getId().toString(),member.getId().toString());
+            Follow follow = followRepository.checkIsFollowing(loggedInMember.getId().toString(),member.getId().toString());
             if(ObjectUtils.isNotEmpty(follow)){
                 postDto.setIsFollowing(true);
             }

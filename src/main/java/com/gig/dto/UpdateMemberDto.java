@@ -19,4 +19,8 @@ public class UpdateMemberDto extends BaseResponseDto{
     private String intentOfUse;
     private Boolean isVerified=Boolean.FALSE;
     private String imageUrl;
+    private String bio;
+    private String clientLookingFor;
+    private String artistLookingFor;
+    private String coverImageUrl;
 }
