@@ -99,12 +99,12 @@ public class LoginServiceImpl implements LoginService {
             Assert.notNull(member, ApplicationConstants.LOGIN_NOT_FOUND);
             boolean isPasswordMatch = applicationUtilities.isPasswordMatched(loginDTO.getPassword(), member.getPassword());
             Assert.isTrue(isPasswordMatch, INVALID_CREDENTIALS);
-            /*if(Boolean.FALSE.equals(member.getIsVerified())){
+            if(Boolean.FALSE.equals(member.getIsVerified())){
                 throw new ApiException("Account is not verified ,verify your account to continue");
-            }*/
-            /*if(ObjectUtils.isEmpty(member.getMemberType())){
+            }
+            if(ObjectUtils.isEmpty(member.getMemberType())){
                 throw new ApiException("Select the user type to continue");
-            }*/
+            }
             saveLoginDetails(httpServletRequest, login, member);
         }catch (Exception ex){
             ex.printStackTrace();
