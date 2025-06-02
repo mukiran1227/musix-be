@@ -14,4 +14,5 @@ public class LoginResponseDto extends BaseResponseDto{
     private String token;
     private UUID memberId;
     private Boolean isVerified=Boolean.FALSE;
+    private String memberType;
 }

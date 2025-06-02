@@ -102,9 +102,6 @@ public class LoginServiceImpl implements LoginService {
             if(Boolean.FALSE.equals(member.getIsVerified())){
                 throw new ApiException("Account is not verified ,verify your account to continue");
             }
-            if(ObjectUtils.isEmpty(member.getMemberType())){
-                throw new ApiException("Select the user type to continue");
-            }
             saveLoginDetails(httpServletRequest, login, member);
         }catch (Exception ex){
             ex.printStackTrace();

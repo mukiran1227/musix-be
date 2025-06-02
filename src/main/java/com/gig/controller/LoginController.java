@@ -64,4 +64,9 @@ public class LoginController {
         return loginFacade.createCraft(craftDto);
     }
 
+    @PostMapping(value = "/verify")
+    public ResponseEntity<BaseResponseDto> verifyUserOtp(@RequestBody VerifyRequestDto verifyRequest) {
+        return loginFacade.verifyOtp(verifyRequest);
+    }
+
 }

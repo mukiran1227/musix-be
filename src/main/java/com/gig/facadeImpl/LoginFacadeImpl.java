@@ -75,6 +75,8 @@ public class LoginFacadeImpl implements LoginFacade {
                     loginResponseDto.setEmailAddress(member.getEmailAddress());
                     loginResponseDto.setMemberId(member.getId());
                     loginResponseDto.setToken(login.getToken());
+                    loginResponseDto.setMemberType(member.getMemberType());
+                    loginResponseDto.setIsVerified(member.getIsVerified());
                 }
             }
         }catch (Exception ex){
@@ -170,6 +172,43 @@ public class LoginFacadeImpl implements LoginFacade {
         }
         return new ResponseEntity<>(responseDto,HttpStatus.OK);
     }
+
+    @Override
+    public ResponseEntity<BaseResponseDto> verifyOtp(VerifyRequestDto verifyRequest) {
+        BaseResponseDto baseResponseDto = new BaseResponseDto();
+        try {
+            Member member = memberRepository.findByEmailAddressOtp(verifyRequest.getEmailAddress(),verifyRequest.getOtp(), false);
+            Assert.notNull(member, "Invalid OTP");
+            if(ObjectUtils.isNotEmpty(member)) {
+                logger.debug("LoginRegistrationFacadeImpl::verifyOtp :: validating the OTP");
+                ResetPasswordDto resetPasswordDto = new ResetPasswordDto();
+                resetPasswordDto.setOtp(verifyRequest.getOtp());
+                Map<String, Object> resource = loginService.verifyOtp(member, resetPasswordDto);
+                if(resource.get("success").equals(true)) {
+                    baseResponseDto.setMessage("OTP verified successfully");
+                    if(Boolean.FALSE.equals(member.getIsVerified())) {
+                        member.setIsVerified(true);
+                        memberRepository.save(member);
+                    }
+                    logger.debug("LoginRegistrationFacadeImpl::verifyOtp :: "+verifyRequest.getOtp()+" OTP verified successfully.");
+                } else if(resource.get("expired").equals(true)) {
+                    baseResponseDto.setMessage("Entered OTP has expired, please click on resend button to get a new OTP.");
+                    logger.debug("LoginRegistrationFacadeImpl::verifyOtp ::Entered OTP "+verifyRequest.getOtp()+"has expired, please click on resend button to get a new OTP.");
+                    return new ResponseEntity<>(baseResponseDto, HttpStatus.BAD_REQUEST);
+                } else if(resource.get("invalid").equals(true)) {
+                    baseResponseDto.setMessage("Invalid OTP. Please enter a valid OTP");
+                    logger.debug("LoginRegistrationFacadeImpl::verifyOtp ::Invalid "+verifyRequest.getOtp()+" OTP. Please enter a valid OTP.");
+                    return new ResponseEntity<>(baseResponseDto, HttpStatus.BAD_REQUEST);
+                }
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+            logger.error("LoginRegistrationFacadeImpl::verifyOtp "+e.getLocalizedMessage());
+            throw new ApiException(e.getLocalizedMessage());
+        }
+        return new ResponseEntity<>(baseResponseDto, HttpStatus.OK);
+    }
+
 
     public LoginResponseDto setPassword(ResetPasswordDto resetPasswordDto, HttpServletRequest httpServletRequest, String emailAddress) {
         LoginResponseDto loginResponse = new LoginResponseDto();
