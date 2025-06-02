@@ -84,4 +84,9 @@ public class MemberController {
     public ResponseEntity<BaseResponseDto> removeFollower(@RequestParam(value = "memberId") String memberId , HttpServletRequest request){
         return memberFacade.removeFollower(memberId,request);
     }
+
+    @PostMapping("/delete-account")
+    public ResponseEntity<BaseResponseDto> deleteAccount(@RequestParam(value = "email") String email , HttpServletRequest request){
+        return memberFacade.deleteAccount(email,request);
+    }
 }

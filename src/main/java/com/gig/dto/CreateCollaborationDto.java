@@ -1,3 +1,4 @@
+/*
 package com.gig.dto;
 
 
@@ -17,3 +18,4 @@ public class CreateCollaborationDto extends BaseResponseDto{
     private String emailAddress;
     private String imageUrl;
 }
+*/

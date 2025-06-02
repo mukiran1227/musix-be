@@ -1,6 +1,7 @@
 package com.gig.service;
 
 import com.gig.dto.BaseResponseDto;
+import com.gig.dto.EmailDto;
 import com.gig.dto.LoginDto;
 import com.gig.dto.LoginResponseDto;
 import com.gig.dto.ResetPasswordDto;
@@ -22,7 +23,7 @@ public interface LoginService {
 
     Login login(LoginDto loginDTO, HttpServletRequest httpServletRequest, LoginResponseDto loginResponseDto);
 
-    BaseResponseDto generateOtp(String username, BaseResponseDto baseResponseDto, Member member);
+    BaseResponseDto generateOtp(String username, BaseResponseDto baseResponseDto, Member member, EmailDto emailDto);
 
     Map<String, Object> verifyOtp(Member member, ResetPasswordDto resetPasswordDto);
 }

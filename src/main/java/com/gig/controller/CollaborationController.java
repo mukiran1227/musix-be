@@ -1,3 +1,4 @@
+/*
 package com.gig.controller;
 
 import com.gig.dto.BaseResponseDto;
@@ -45,3 +46,4 @@ public class CollaborationController {
         return collaborationFacade.getUserCollaborations(request);
     }
 }
+*/

@@ -1,5 +1,6 @@
 package com.gig.repository;
 
+import com.gig.enums.LoginStatusEnum;
 import com.gig.models.Login;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,4 +15,5 @@ public interface LoginRepository extends JpaRepository<Login, UUID> {
 
     @Query(value = "select * from login where token=:authToken and status=:status",nativeQuery = true)
     Login findByTokenAndStatus(@Param("authToken") String authToken, @Param("status") String status);
+
 }

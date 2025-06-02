@@ -1,3 +1,4 @@
+/*
 package com.gig.facade;
 
 import com.gig.dto.BaseResponseDto;
@@ -15,3 +16,4 @@ public interface CollaborationFacade {
 
     ResponseEntity<List<CollaborationDto>> getUserCollaborations(HttpServletRequest request);
 }
+*/

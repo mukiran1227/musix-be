@@ -29,4 +29,6 @@ public interface MemberFacade {
     ResponseEntity<List<CraftDto>> getAllCrafts(HttpServletRequest request);
 
     ResponseEntity<BaseResponseDto> removeFollower(String memberId, HttpServletRequest request);
+
+    ResponseEntity<BaseResponseDto> deleteAccount(String email, HttpServletRequest request);
 }

@@ -3,6 +3,7 @@ package com.gig.facadeImpl;
 import com.gig.applicationUtilities.ApplicationUtilities;
 import com.gig.dto.BaseResponseDto;
 import com.gig.dto.CraftDto;
+import com.gig.dto.EmailDto;
 import com.gig.dto.ForgotPasswordDto;
 import com.gig.dto.LoginDto;
 import com.gig.dto.LoginResponseDto;
@@ -94,7 +95,10 @@ public class LoginFacadeImpl implements LoginFacade {
             throw new ApiException(USER_DOES_NOT_EXIST);
         } else {
             String username = forgotPasswordDto.getEmailAddress().toLowerCase();
-            baseResponseDto = loginService.generateOtp(username, baseResponseDto, member);
+            EmailDto emailDto = new EmailDto();
+            emailDto.setSubject("Reset Password Request");
+            emailDto.setTemplateName("ForgotPasswordEmailTemplate");
+            baseResponseDto = loginService.generateOtp(username, baseResponseDto, member, emailDto);
             logger.debug("LoginRegistrationServiceImpl::forgotPassword: Reset Password mail is sent to {}", emailAddress);
         }
         return new ResponseEntity<>(baseResponseDto, HttpStatus.OK);
@@ -106,7 +110,10 @@ public class LoginFacadeImpl implements LoginFacade {
         try {
             Member member = memberRepository.findByEmailAddress(verifyRequest.getEmailAddress(), false);
             if(ObjectUtils.isNotEmpty(member)) {
-                baseResponseDto = loginService.generateOtp(verifyRequest.getEmailAddress(), baseResponseDto, member);
+                EmailDto emailDto = new EmailDto();
+                emailDto.setSubject("Reset Password Request");
+                emailDto.setTemplateName("ForgotPasswordEmailTemplate");
+                baseResponseDto = loginService.generateOtp(verifyRequest.getEmailAddress(), baseResponseDto, member, emailDto);
             }
         } catch (Exception e) {
             e.printStackTrace();

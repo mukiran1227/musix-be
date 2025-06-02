@@ -1,3 +1,4 @@
+/*
 package com.gig.repository;
 
 import com.gig.models.Collaboration;
@@ -18,3 +19,4 @@ public interface CollaborationRepository extends JpaRepository<Collaboration, UU
     @Query(value = "select * from collaboration c where c.is_deleted=false and c.created_by=:memberId ",nativeQuery = true)
     List<Collaboration> findByMemberId(@Param("memberId") String memberId);
 }
+*/

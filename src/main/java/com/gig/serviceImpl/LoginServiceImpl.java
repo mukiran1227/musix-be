@@ -5,13 +5,12 @@ import com.gig.applicationUtilities.ApplicationUtilities;
 import com.gig.config.JwtTokenUtils;
 import com.gig.config.OTPService;
 import com.gig.dto.BaseResponseDto;
+import com.gig.dto.EmailDto;
 import com.gig.dto.LoginDto;
 import com.gig.dto.LoginResponseDto;
 import com.gig.dto.ResetPasswordDto;
-import com.gig.dto.VerifyRequestDto;
 import com.gig.enums.LoginStatusEnum;
 import com.gig.exceptions.ApiException;
-import com.gig.facadeImpl.LoginFacadeImpl;
 import com.gig.models.Login;
 import com.gig.models.Member;
 import com.gig.repository.LoginRepository;
@@ -19,7 +18,6 @@ import com.gig.repository.MemberRepository;
 import com.gig.service.LoginService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,7 +99,12 @@ public class LoginServiceImpl implements LoginService {
             Assert.notNull(member, ApplicationConstants.LOGIN_NOT_FOUND);
             boolean isPasswordMatch = applicationUtilities.isPasswordMatched(loginDTO.getPassword(), member.getPassword());
             Assert.isTrue(isPasswordMatch, INVALID_CREDENTIALS);
-            loginResponseDto.setIsVerified(member.getIsVerified());
+            /*if(Boolean.FALSE.equals(member.getIsVerified())){
+                throw new ApiException("Account is not verified ,verify your account to continue");
+            }*/
+            /*if(ObjectUtils.isEmpty(member.getMemberType())){
+                throw new ApiException("Select the user type to continue");
+            }*/
             saveLoginDetails(httpServletRequest, login, member);
         }catch (Exception ex){
             ex.printStackTrace();
@@ -111,17 +114,17 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    public BaseResponseDto generateOtp(String username, BaseResponseDto baseResponseDto, Member member) {
+    public BaseResponseDto generateOtp(String username, BaseResponseDto baseResponseDto, Member member, EmailDto emailDto) {
         try {
             logger.info("LoginRegistrationFacadeImpl::generateAndSaveOtp :: Entering generate OTP");
-            Map<String, Object> resource = otpService.generateOtp(member.getEmailAddress().toLowerCase());
+            Map<String, Object> resource = otpService.generateOtp(member.getEmailAddress().toLowerCase(),emailDto);
             if (resource.get(ApplicationConstants.IS_MAIL_SENT).equals(true)) {
-                baseResponseDto.setMessage(ApplicationConstants.VERIFICATION_MAIL);
-            }
+                if (ObjectUtils.isNotEmpty(baseResponseDto)) {
+                    baseResponseDto.setMessage(ApplicationConstants.VERIFICATION_MAIL);
+                }            }
             Integer otp = (Integer) resource.get("otp");
             member.setOtp(otp);
             memberRepository.save(member);
-            baseResponseDto.setMessage(MAIL_SENT);
         }catch (Exception ex){
             ex.printStackTrace();
         }

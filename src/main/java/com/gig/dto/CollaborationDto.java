@@ -1,3 +1,4 @@
+/*
 package com.gig.dto;
 
 
@@ -18,3 +19,4 @@ public class CollaborationDto extends BaseResponseDto{
     private String clientLookingFor;
     private String artistLookingFor;
 }
+*/

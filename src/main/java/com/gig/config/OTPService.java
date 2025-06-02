@@ -20,7 +20,7 @@ public class OTPService {
     OTPGenerator otpGenerator;
     @Autowired
     EmailService emailService;
-    public Map<String, Object> generateOtp(String key) {
+    public Map<String, Object> generateOtp(String key, EmailDto emailDto) {
         Map<String, Object> resource = new HashMap<>();
         Boolean isMailSent = true;
         resource.put(ApplicationConstants.IS_MAIL_SENT, isMailSent);
@@ -33,12 +33,9 @@ public class OTPService {
         LOGGER.info("OTPService::generateOtp:: Generated OTP: {}", otp);
         try {
             Context context = new Context();
-            EmailDto emailDTO = new EmailDto();
-            emailDTO.setRecipient(key);
-            emailDTO.setSubject("Reset Password Request");
-            emailDTO.setTemplateName("ForgotPasswordEmailTemplate");
+            emailDto.setRecipient(key);
             context.setVariable("otp", otp);
-            emailService.sendMail(emailDTO, context);
+            emailService.sendMail(emailDto, context);
             resource.put("otp", otp);
         } catch (Exception e) {
             LOGGER.info("OTPService::generateOtp::Failed to send mail: ", e.getLocalizedMessage());

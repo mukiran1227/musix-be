@@ -15,16 +15,11 @@ public class MemberDto extends BaseResponseDto{
     private String firstName;
     private String lastName;
     private String emailAddress;
-    private String city;
-    private String craft;
-    private String craftId;
-    private String intentOfUse;
+    private String location;
     private Boolean isVerified=Boolean.FALSE;
     private int followersCount;
     private String imageUrl;
     private String bio;
-    private String clientLookingFor;
-    private String artistLookingFor;
-    private String coverImageUrl;
-    private List<CollaborationDto> collaborationDto = new ArrayList<>();
+    private String memberType;
+    private String username;
 }

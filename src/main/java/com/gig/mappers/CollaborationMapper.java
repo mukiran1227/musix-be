@@ -1,3 +1,4 @@
+/*
 package com.gig.mappers;
 
 import com.gig.dto.CollaborationDto;
@@ -21,3 +22,4 @@ public interface CollaborationMapper {
 
     List<CollaborationDto> listEntityToDto(List<Collaboration> collaborations);
 }
+*/

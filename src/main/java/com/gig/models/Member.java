@@ -30,12 +30,6 @@ public class Member extends BaseEntity{
     private String emailAddress;
     @Column(name = "password")
     private String password;
-    @Column(name = "city")
-    private String city;
-    @Column(name = "craft")
-    private String craft;
-    @Column(name = "intent_of_use")
-    private String intentOfUse;
     @Column(name = "is_verified")
     private Boolean isVerified=Boolean.FALSE;
     @Column(name = "image_url",columnDefinition = "TEXT")
@@ -44,11 +38,10 @@ public class Member extends BaseEntity{
     private Integer otp;
     @Column(name = "bio",columnDefinition = "TEXT")
     private String bio;
-    @Column(name = "lookingFor",columnDefinition = "TEXT")
-    private String clientLookingFor;
-    @Column(name = "artistLookingFor",columnDefinition = "TEXT")
-    private String artistLookingFor;
-    @Column(name = "cover_image_url",columnDefinition = "TEXT")
-    private String coverImageUrl;
-
+    @Column(name = "member_type")
+    private String memberType;
+    @Column(name = "location")
+    private String location;
+    @Column(name = "username")
+    private String username;
 }

@@ -5,29 +5,28 @@ import com.gig.applicationUtilities.ApplicationConstants;
 import com.gig.applicationUtilities.ApplicationUtilities;
 import com.gig.dto.BaseResponseDto;
 import com.gig.dto.ChangePasswordDto;
-import com.gig.dto.CollaborationDto;
 import com.gig.dto.CraftDto;
 import com.gig.dto.FollowersDto;
 import com.gig.dto.MemberDto;
 import com.gig.dto.RegistrationDto;
 import com.gig.dto.RegistrationResponseDto;
 import com.gig.dto.UpdateMemberDto;
+import com.gig.enums.LoginStatusEnum;
 import com.gig.exceptions.ApiException;
 import com.gig.facade.MemberFacade;
 import com.gig.mappers.MemberMapper;
-import com.gig.models.Collaboration;
 import com.gig.models.Craft;
 import com.gig.models.Login;
 import com.gig.models.Member;
-import com.gig.repository.CollaborationRepository;
 import com.gig.repository.CraftRepository;
 import com.gig.repository.FollowRepository;
+import com.gig.repository.LoginRepository;
 import com.gig.repository.MemberRepository;
 import com.gig.service.LoginService;
 import com.gig.service.MemberService;
+import com.gig.serviceImpl.LoginServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -40,6 +39,7 @@ import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static com.gig.applicationUtilities.ApplicationConstants.FOLLOWER;
 import static com.gig.applicationUtilities.ApplicationConstants.FOLLOWING;
@@ -75,8 +75,11 @@ public class MemberFacadeImpl implements MemberFacade {
     private CraftRepository craftRepository;
 
     @Autowired
-    private CollaborationRepository collaborationRepository;
+    private LoginServiceImpl loginServiceImpl;
 
+    /*@Autowired
+    private CollaborationRepository collaborationRepository;
+*/
     private final Logger logger = LoggerFactory.getLogger(MemberFacadeImpl.class);
 
     @Override
@@ -122,14 +125,14 @@ public class MemberFacadeImpl implements MemberFacade {
             if(ObjectUtils.isNotEmpty(memberDto)){
                 int followerCount = followRepository.fetchFollowersCount(member.getId().toString());
                 memberDto.setFollowersCount(followerCount);
-                if(ObjectUtils.isNotEmpty(memberDto.getCraft())){
+                /*if(ObjectUtils.isNotEmpty(memberDto.getCraft())){
                     Craft craft = craftRepository.findByIdAndIsDeleted(memberDto.getCraft());
                     if(ObjectUtils.isNotEmpty(craft)) {
                         memberDto.setCraftId(craft.getId().toString());
                         memberDto.setCraft(craft.getName());
                     }
-                }
-                List<Collaboration> collaborations = collaborationRepository.findByMemberId(memberDto.getId().toString());
+                }*/
+                /*List<Collaboration> collaborations = collaborationRepository.findByMemberId(memberDto.getId().toString());
                 if(CollectionUtils.isNotEmpty(collaborations)){
                     List<CollaborationDto> collaborationDtoList = new ArrayList<>();
                     collaborations.forEach(collaboration -> {
@@ -139,7 +142,7 @@ public class MemberFacadeImpl implements MemberFacade {
                         collaborationDtoList.add(collaborationDto);
                     });
                     memberDto.setCollaborationDto(collaborationDtoList);
-                }
+                }*/
             }
         }catch (Exception ex){
             ex.printStackTrace();
@@ -235,6 +238,29 @@ public class MemberFacadeImpl implements MemberFacade {
         }catch (Exception ex){
             ex.printStackTrace();
             responseDto.setMessage(ex.getLocalizedMessage());
+            return new ResponseEntity<>(responseDto,HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(responseDto,HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<BaseResponseDto> deleteAccount(String email, HttpServletRequest request) {
+        BaseResponseDto responseDto = new BaseResponseDto();
+        try{
+            Member loggedInMember  = applicationUtilities.getLoggedInUser(request);
+            Member member = memberRepository.findByEmailAddress(email,false);
+            if(ObjectUtils.isNotEmpty(member) && Objects.equals(loggedInMember,member)){
+                member.setIsDeleted(true);
+                memberRepository.save(member);
+                loginServiceImpl.logout(request);
+                responseDto.setMessage("Account Deleted Successfully");
+            }else {
+                responseDto.setMessage("You don't have access to delete account");
+            }
+
+        }catch (Exception ex){
+            ex.printStackTrace();
+            responseDto.setMessage(ex.getMessage());
             return new ResponseEntity<>(responseDto,HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(responseDto,HttpStatus.OK);

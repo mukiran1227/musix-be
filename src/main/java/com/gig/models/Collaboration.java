@@ -1,3 +1,4 @@
+/*
 package com.gig.models;
 
 import jakarta.persistence.Column;
@@ -35,3 +36,4 @@ public class Collaboration extends BaseEntity{
     @Column(name = "artistLookingFor", columnDefinition = "TEXT")
     private String artistLookingFor;
 }
+*/

@@ -11,6 +11,7 @@ import com.gig.models.Follow;
 import com.gig.models.Member;
 import com.gig.repository.FollowRepository;
 import com.gig.repository.MemberRepository;
+import com.gig.service.LoginService;
 import com.gig.service.MemberService;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.BooleanUtils;
@@ -44,6 +45,9 @@ public class MemberServiceImpl implements MemberService {
     @Autowired
     private FollowRepository followRepository;
 
+    @Autowired
+    private LoginService loginService;
+
     @Override
     @Transactional(rollbackOn = {Exception.class, ApiException.class})
     public Member createAccount(RegistrationDto registrationDto) {
@@ -54,12 +58,10 @@ public class MemberServiceImpl implements MemberService {
             member.setPassword(encryptedPassword);
             member.setEmailAddress(registrationDto.getEmailAddress());
             memberRepository.save(member);
-            Context context = new Context();
             EmailDto emailDto = new EmailDto();
-            emailDto.setRecipient(member.getEmailAddress());
-            emailDto.setSubject(MEMBER_REGISTRATION_SUCCESSFULLY);
-            emailDto.setTemplateName("RegistrationEmailTemplate");
-            emailService.sendMail(emailDto, context);
+            emailDto.setSubject("Account Verification");
+            emailDto.setTemplateName("AccountVerificationEmailTemplate");
+            loginService.generateOtp(member.getEmailAddress(), null, member,emailDto);
         }catch (Exception ex){
             ex.printStackTrace();
         }
