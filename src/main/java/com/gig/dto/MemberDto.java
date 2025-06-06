@@ -18,6 +18,8 @@ public class MemberDto extends BaseResponseDto{
     private String location;
     private Boolean isVerified=Boolean.FALSE;
     private int followersCount;
+    private int followingCount;
+    private int postCount;
     private String imageUrl;
     private String bio;
     private String memberType;

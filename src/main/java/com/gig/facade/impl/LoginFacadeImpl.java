@@ -1,4 +1,4 @@
-package com.gig.facadeImpl;
+package com.gig.facade.impl;
 
 import com.gig.applicationUtilities.ApplicationUtilities;
 import com.gig.dto.BaseResponseDto;

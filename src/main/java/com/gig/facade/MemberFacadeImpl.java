@@ -1,4 +1,4 @@
-package com.gig.facadeImpl;
+package com.gig.facade;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gig.applicationUtilities.ApplicationConstants;
@@ -11,17 +11,15 @@ import com.gig.dto.MemberDto;
 import com.gig.dto.RegistrationDto;
 import com.gig.dto.RegistrationResponseDto;
 import com.gig.dto.UpdateMemberDto;
-import com.gig.enums.LoginStatusEnum;
 import com.gig.exceptions.ApiException;
-import com.gig.facade.MemberFacade;
 import com.gig.mappers.MemberMapper;
 import com.gig.models.Craft;
 import com.gig.models.Login;
 import com.gig.models.Member;
 import com.gig.repository.CraftRepository;
 import com.gig.repository.FollowRepository;
-import com.gig.repository.LoginRepository;
 import com.gig.repository.MemberRepository;
+import com.gig.repository.PostsRepository;
 import com.gig.service.LoginService;
 import com.gig.service.MemberService;
 import com.gig.serviceImpl.LoginServiceImpl;
@@ -52,7 +50,6 @@ import static com.gig.applicationUtilities.ApplicationConstants.USER_ALREADY_EXI
 @RequiredArgsConstructor
 public class MemberFacadeImpl implements MemberFacade {
 
-
     @Autowired
     private  MemberRepository memberRepository;
 
@@ -76,6 +73,9 @@ public class MemberFacadeImpl implements MemberFacade {
 
     @Autowired
     private LoginServiceImpl loginServiceImpl;
+
+    @Autowired
+    private PostsRepository postsRepository;
 
     /*@Autowired
     private CollaborationRepository collaborationRepository;
@@ -123,8 +123,18 @@ public class MemberFacadeImpl implements MemberFacade {
                 memberDto = MemberMapper.INSTANCE.memberEntityToDto(member);
             }
             if(ObjectUtils.isNotEmpty(memberDto)){
+                // Get followers count
                 int followerCount = followRepository.fetchFollowersCount(member.getId().toString());
                 memberDto.setFollowersCount(followerCount);
+
+                // Get following count
+                int followingCount = followRepository.fetchFollowingCount(member.getId().toString());
+                memberDto.setFollowingCount(followingCount);
+
+                // Get post count
+                int postCount = postsRepository.countByMemberIdAndIsDeletedFalse(memberId);
+                memberDto.setPostCount(postCount);
+
                 /*if(ObjectUtils.isNotEmpty(memberDto.getCraft())){
                     Craft craft = craftRepository.findByIdAndIsDeleted(memberDto.getCraft());
                     if(ObjectUtils.isNotEmpty(craft)) {

@@ -25,6 +25,9 @@ public interface FollowRepository extends JpaRepository<Follow, UUID> {
     @Query(value = "select count(f.id) from follow f where f.followed=:memberId and f.is_deleted=false ",nativeQuery = true)
     int fetchFollowersCount(@Param("memberId") String memberId);
 
+    @Query(value = "select count(f.id) from follow f where f.follower=:memberId and f.is_deleted=false ",nativeQuery = true)
+    int fetchFollowingCount(@Param("memberId") String memberId);
+
     @Query(value = "select * from follow f where f.follower=:followerId and f.followed=:followingId and f.is_deleted=false ",nativeQuery = true)
     Follow checkIsFollowing(@Param("followerId") String followerId, @Param("followingId") String followingId);
 

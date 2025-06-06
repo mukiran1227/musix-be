@@ -3,6 +3,7 @@ package com.gig.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -14,4 +15,5 @@ public class CommentsDto extends BaseResponseDto {
     private String username;
     private String profileUrl;
     private String imageUrl;
+    private LocalDateTime creationTimestamp;
 }
