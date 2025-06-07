@@ -54,14 +54,7 @@ public class EventFacadeImpl implements EventFacade {
             applicationUtilities.getLoggedInUser(request);
             long total = eventService.countEventsByCategory(category);
             List<EventDTO> events = eventService.getEventsByCategory(page, size, category);
-            PageResponseDTO<EventDTO> response = new PageResponseDTO<>();
-            response.setContent(events);
-            response.setPageNumber(page);
-            response.setPageSize(size);
-            response.setTotalElements(total);
-            response.setTotalPages((int) Math.ceil((double) total / size));
-            response.setLast(page >= (response.getTotalPages() - 1));
-            return response;
+            return createPageResponse(events,page, size,total);
         } catch (Exception ex) {
             throw new ApiException(ex.getMessage(), ex);
         }
@@ -130,7 +123,7 @@ public class EventFacadeImpl implements EventFacade {
         response.setPageSize(size);
         response.setTotalElements(totalElements);
         response.setTotalPages((int) Math.ceil((double) totalElements / size));
-        response.setLast(page >= response.getTotalPages() - 1);
+        response.setLast(page >= (response.getTotalPages() - 1));
         return response;
     }
 

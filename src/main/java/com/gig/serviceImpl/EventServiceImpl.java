@@ -9,17 +9,14 @@ import com.gig.mappers.EventMapper;
 import com.gig.models.Events;
 import com.gig.models.Member;
 import com.gig.repository.EventRepository;
-import com.gig.repository.MemberRepository;
 import com.gig.service.EventService;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.stream.Collectors;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -27,8 +24,6 @@ import java.util.List;
 public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
-    private final EventMapper eventMapper;
-    private final MemberRepository memberRepository;
 
     private static final String EVENT_NOT_FOUND = "Event not found with id: %s";
     private static final String INVALID_DATE_RANGE = "End date must be after start date";
@@ -41,8 +36,8 @@ public class EventServiceImpl implements EventService {
         if (event == null) {
             throw new ApiException(String.format(EVENT_NOT_FOUND, id));
         }
-        EventDTO  eventDTO = eventMapper.toDto(event);
-        eventMapper.afterToDto(event,eventDTO);
+        EventDTO  eventDTO = EventMapper.INSTANCE.toDto(event);
+        EventMapper.INSTANCE.afterToDto(event,eventDTO);
         return eventDTO;
 
     }
@@ -53,8 +48,8 @@ public class EventServiceImpl implements EventService {
         List<Events> events = eventRepository.findAllByIsDeletedFalse(offset, size);
         return events.stream()
                 .map(event -> {
-                    EventDTO dto = eventMapper.toDto(event);
-                    eventMapper.afterToDto(event, dto);
+                    EventDTO dto = EventMapper.INSTANCE.toDto(event);
+                    EventMapper.INSTANCE.afterToDto(event, dto);
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -66,8 +61,8 @@ public class EventServiceImpl implements EventService {
         List<Events> events = eventRepository.findByCategoryAndIsDeletedFalse(category, offset, size);
         return events.stream()
                 .map(event -> {
-                    EventDTO dto = eventMapper.toDto(event);
-                    eventMapper.afterToDto(event, dto);
+                    EventDTO dto = EventMapper.INSTANCE.toDto(event);
+                    EventMapper.INSTANCE.afterToDto(event, dto);
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -89,8 +84,8 @@ public class EventServiceImpl implements EventService {
         List<Events> events = eventRepository.findByCreatedByAndIsDeletedFalse(loggedInMember.getId().toString(), offset, size);
         return events.stream()
                 .map(event -> {
-                    EventDTO dto = eventMapper.toDto(event);
-                    eventMapper.afterToDto(event, dto);
+                    EventDTO dto = EventMapper.INSTANCE.toDto(event);
+                    EventMapper.INSTANCE.afterToDto(event, dto);
                     return dto;
                 })
                 .toList();
@@ -137,7 +132,7 @@ public class EventServiceImpl implements EventService {
         validateTickets(eventDTO.getTickets());
         validatePerformers(eventDTO.getPerformers());
 
-        Events event = eventMapper.toEntity(eventDTO);
+        Events event = EventMapper.INSTANCE.toEntity(eventDTO);
         event.setMember(loggedInMember);
         event.setCreatedBy(loggedInMember.getId());
         event.setCreationTimestamp(LocalDateTime.now());
@@ -159,7 +154,7 @@ public class EventServiceImpl implements EventService {
         if (existingEvent == null) {
             throw new ApiException(String.format(EVENT_NOT_FOUND, id));
         }
-        Events updatedEvent = eventMapper.toEntity(updatedEventDTO);
+        Events updatedEvent = EventMapper.INSTANCE.toEntity(updatedEventDTO);
         
         existingEvent.setName(updatedEvent.getName());
         existingEvent.setDescription(updatedEvent.getDescription());
@@ -170,12 +165,7 @@ public class EventServiceImpl implements EventService {
         existingEvent.setUpdatedBy(loggedInMember.getId());
         existingEvent.setUpdateTimestamp(LocalDateTime.now());
 
-        Events savedEvent = eventRepository.save(existingEvent);
-
-        EventDTO savedEventDTO = eventMapper.toDto(savedEvent);
-        savedEventDTO.setTickets(eventMapper.toTicketDtoList(savedEvent.getTickets()));
-        savedEventDTO.setPerformers(eventMapper.toPerformerDtoList(savedEvent.getPerformers()));
-
+        eventRepository.save(existingEvent);
         responseDto.setMessage("Event Updated Successfully");
         return responseDto;
     }
@@ -194,7 +184,7 @@ public class EventServiceImpl implements EventService {
     public List<TicketDTO> getTicketsForEvent(String eventId, Member loggedInMember) {
         try {
             Events event = eventRepository.findByIdAndIsDeletedFalse(eventId);
-            return eventMapper.toTicketDtoList(event.getTickets());
+            return EventMapper.INSTANCE.toTicketDtoList(event.getTickets());
         } catch (Exception e) {
             throw new ApiException("Failed to fetch tickets for event: " + e.getMessage(), e);
         }
@@ -204,7 +194,7 @@ public class EventServiceImpl implements EventService {
     public List<PerformerDTO> getPerformersForEvent(String eventId) {
         try {
             Events event = eventRepository.findByIdAndIsDeletedFalse(eventId);
-            return eventMapper.toPerformerDtoList(event.getPerformers());
+            return EventMapper.INSTANCE.toPerformerDtoList(event.getPerformers());
         } catch (Exception e) {
             throw new ApiException("Failed to fetch performers for event: " + e.getMessage(), e);
         }

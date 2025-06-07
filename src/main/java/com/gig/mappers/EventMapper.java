@@ -90,14 +90,4 @@ public interface EventMapper {
     default List<PerformerDTO> toPerformerDtoList(Set<Performers> performers) {
         return PerformerMapper.INSTANCE.toDtoList(performers);
     }
-
-
-
-    // Nested mappings
-    TicketDTO toTicketDto(Tickets ticket);
-    PerformerDTO toPerformerDto(Performers performer);
-
-    // DTO to entity conversions
-    Tickets ticketDtoToEntity(TicketDTO ticketDTO);
-    Performers performerDtoToEntity(PerformerDTO performerDTO);
 }
