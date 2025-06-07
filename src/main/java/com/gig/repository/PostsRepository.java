@@ -31,7 +31,7 @@ public interface PostsRepository extends JpaRepository<Posts, UUID> {
     @Query(value = "select * from posts p where p.is_deleted=false ORDER BY p.created_at DESC ",nativeQuery = true)
     List<Posts> findAllPosts();
 
-    @Query(value = "select count(p.id) from posts p where p.member=:memberId and p.is_deleted=false",nativeQuery = true)
+    @Query(value = "select count(p.id) from posts p where p.member_id=:memberId and p.is_deleted=false",nativeQuery = true)
     int countByMemberIdAndIsDeletedFalse(@Param("memberId") String memberId);
 
 }
