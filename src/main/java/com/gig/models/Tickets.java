@@ -17,7 +17,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity(name = "tickets")
-@EqualsAndHashCode(callSuper = true)
 public class Tickets extends BaseEntity{
     @Id
     @UuidGenerator

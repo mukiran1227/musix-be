@@ -5,6 +5,7 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -14,7 +15,9 @@ import org.hibernate.annotations.UuidGenerator;
 
 import java.sql.Types;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -33,8 +36,12 @@ public class Events extends BaseEntity{
     private LocalDateTime endDateTime;
     private String category;
     private String location;
-    private String coverImageUrl;
-    private String imageUrl;
+    @ManyToOne
+    private Member member;
+    @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private List<Attachments> coverImageUrl = new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private List<Attachments> imageUrl = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Set<Tickets> tickets = new HashSet<>();
@@ -43,5 +50,6 @@ public class Events extends BaseEntity{
     private Set<Performers> performers = new HashSet<>();
     private String instructions;
     private String termsAndConditions;
-    private boolean deleted = false;
+    @JdbcTypeCode(Types.VARCHAR)
+    private UUID createdBy;
 }

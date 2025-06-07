@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServic
 
 @SpringBootApplication(scanBasePackages = {"com.gig"})
 @EnableAutoConfiguration(exclude={UserDetailsServiceAutoConfiguration.class})
-@OpenAPIDefinition(servers = {@Server(url = "/", description = "Default Server URL")})public class GigApplication {
+public class GigApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(GigApplication.class, args);

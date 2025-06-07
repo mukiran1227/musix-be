@@ -16,15 +16,13 @@ public class EventDTO {
     private LocalDateTime endDateTime;
     private String category;
     private String location;
-    private String coverImageUrl;
-    private String imageUrl;
+    private List<AttachmentsDto> coverImageUrl;
+    private List<AttachmentsDto> imageUrl;
     private List<TicketDTO> tickets;
     private List<PerformerDTO> performers;
     private String instructions;
     private String termsAndConditions;
     private boolean deleted;
     private LocalDateTime creationTimestamp;
-    private LocalDateTime updateTimestamp;
-    private UUID createdBy;
-    private UUID updatedBy;
+    private String createdBy;
 }

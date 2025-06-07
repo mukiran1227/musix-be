@@ -1,25 +1,25 @@
 package com.gig.serviceImpl;
 
+import com.gig.dto.BaseResponseDto;
 import com.gig.dto.EventDTO;
-import com.gig.dto.EventSearchDTO;
 import com.gig.dto.PerformerDTO;
 import com.gig.dto.TicketDTO;
 import com.gig.exceptions.ApiException;
 import com.gig.mappers.EventMapper;
 import com.gig.models.Events;
-import com.gig.models.Performers;
-import com.gig.models.Tickets;
+import com.gig.models.Member;
 import com.gig.repository.EventRepository;
+import com.gig.repository.MemberRepository;
 import com.gig.service.EventService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.stream.Collectors;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -28,6 +28,7 @@ public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
+    private final MemberRepository memberRepository;
 
     private static final String EVENT_NOT_FOUND = "Event not found with id: %s";
     private static final String INVALID_DATE_RANGE = "End date must be after start date";
@@ -40,16 +41,69 @@ public class EventServiceImpl implements EventService {
         if (event == null) {
             throw new ApiException(String.format(EVENT_NOT_FOUND, id));
         }
-        return eventMapper.toDto(event);
+        EventDTO  eventDTO = eventMapper.toDto(event);
+        eventMapper.afterToDto(event,eventDTO);
+        return eventDTO;
+
     }
 
     @Override
-    public List<EventDTO> getAllEvents() {
-        List<Events> events = eventRepository.findAllByIsDeletedFalse();
+    public List<EventDTO> getAllEvents(int page, int size) {
+        int offset = (page - 1) * size;
+        List<Events> events = eventRepository.findAllByIsDeletedFalse(offset, size);
         return events.stream()
-                .map(eventMapper::toDto)
+                .map(event -> {
+                    EventDTO dto = eventMapper.toDto(event);
+                    eventMapper.afterToDto(event, dto);
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<EventDTO> getEventsByCategory(int page, int size, String category) {
+        int offset = (page - 1) * size;
+        List<Events> events = eventRepository.findByCategoryAndIsDeletedFalse(category, offset, size);
+        return events.stream()
+                .map(event -> {
+                    EventDTO dto = eventMapper.toDto(event);
+                    eventMapper.afterToDto(event, dto);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public long countEventsByCategory(String category) {
+        return eventRepository.countByCategory(category);
+    }
+
+    @Override
+    public long countAllEvents() {
+        return eventRepository.countAllByIsDeletedFalse();
+    }
+
+    @Override
+    public List<EventDTO> getUserPosts(int page, int size, Member loggedInMember) {
+        int offset = (page - 1) * size;
+        List<Events> events = eventRepository.findByCreatedByAndIsDeletedFalse(loggedInMember.getId().toString(), offset, size);
+        return events.stream()
+                .map(event -> {
+                    EventDTO dto = eventMapper.toDto(event);
+                    eventMapper.afterToDto(event, dto);
+                    return dto;
+                })
+                .toList();
+    }
+
+
+
+    @Override
+    public long countUserPosts(Member loggedInMember) {
+        return eventRepository.countByCreatedByAndIsDeletedFalse(loggedInMember.getId().toString());
+    }
+
+
 
     private void validateTickets(List<TicketDTO> tickets) {
         if (tickets == null || tickets.isEmpty()) {
@@ -76,131 +130,58 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    public EventDTO createEvent(EventDTO eventDTO) {
+    @Override
+    public BaseResponseDto createEvent(EventDTO eventDTO, Member loggedInMember) {
+        BaseResponseDto responseDto = new BaseResponseDto();
         validateEventDates(eventDTO);
         validateTickets(eventDTO.getTickets());
         validatePerformers(eventDTO.getPerformers());
-        
+
         Events event = eventMapper.toEntity(eventDTO);
-        if (eventDTO.getTickets() != null) {
-            event.getTickets().addAll(eventDTO.getTickets().stream()
-                .map(ticketDTO -> {
-                    Tickets ticket = eventMapper.ticketDtoToEntity(ticketDTO);
-                    event.getTickets().add(ticket);
-                    return ticket;
-                })
-                .collect(Collectors.toSet()));
-        }
-        if (eventDTO.getPerformers() != null) {
-            event.getPerformers().addAll(eventDTO.getPerformers().stream()
-                .map(performerDTO -> {
-                    Performers performer = eventMapper.performerDtoToEntity(performerDTO);
-                    event.getPerformers().add(performer);
-                    return performer;
-                })
-                .collect(Collectors.toSet()));
-        }
-        
-        try {
-            Events savedEvent = eventRepository.save(event);
-            return eventMapper.toDto(savedEvent);
-        } catch (Exception e) {
-            throw new ApiException("Failed to create event: " + e.getMessage(), e);
-        }
+        event.setMember(loggedInMember);
+        event.setCreatedBy(loggedInMember.getId());
+        event.setCreationTimestamp(LocalDateTime.now());
+        event.setUpdatedBy(loggedInMember.getId());
+        event.setUpdateTimestamp(LocalDateTime.now());
+        eventRepository.save(event);
+        responseDto.setMessage("Event Created Successfully");
+        return responseDto;
     }
 
-    public List<EventDTO> getEventsByLocation(String location) {
-        try {
-            return eventRepository.findByLocationAndIsDeletedFalse(location)
-                    .stream()
-                    .map(eventMapper::toDto)
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            throw new ApiException("Failed to fetch events by location: " + e.getMessage(), e);
-        }
-    }
-
-    public List<EventDTO> getEventsByDateRange(LocalDateTime start, LocalDateTime end) {
-        if (start != null && end != null && start.isAfter(end)) {
-            throw new ApiException(INVALID_DATE_RANGE);
-        }
-        
-        try {
-            return eventRepository.findByStartDateTimeBetweenNative(start, end)
-                    .stream()
-                    .map(eventMapper::toDto)
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            throw new ApiException("Failed to fetch events by date range: " + e.getMessage(), e);
-        }
-    }
-
-    public List<EventDTO> searchEvents(EventSearchDTO searchDTO) {
-        try {
-            List<Events> events = eventRepository.searchEvents(searchDTO.getCategories(),
-                searchDTO.getLocation(),
-                searchDTO.getStartDate(),
-                searchDTO.getEndDate(),
-                searchDTO.getMinPrice(),
-                searchDTO.getMaxPrice(),
-                searchDTO.getSearchQuery()
-            );
-            return events.stream()
-                    .map(eventMapper::toDto)
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            throw new ApiException("Failed to search events: " + e.getMessage(), e);
-        }
-    }
-
-    public EventDTO updateEvent(String id, EventDTO updatedEventDTO) {
+    @Override
+    public BaseResponseDto updateEvent(String id, EventDTO updatedEventDTO, Member loggedInMember) {
+        BaseResponseDto responseDto = new BaseResponseDto();
         validateEventDates(updatedEventDTO);
         validateTickets(updatedEventDTO.getTickets());
         validatePerformers(updatedEventDTO.getPerformers());
         
         Events existingEvent = eventRepository.findByIdAndIsDeletedFalse(id);
+        if (existingEvent == null) {
+            throw new ApiException(String.format(EVENT_NOT_FOUND, id));
+        }
         Events updatedEvent = eventMapper.toEntity(updatedEventDTO);
         
         existingEvent.setName(updatedEvent.getName());
         existingEvent.setDescription(updatedEvent.getDescription());
         existingEvent.setStartDateTime(updatedEvent.getStartDateTime());
         existingEvent.setEndDateTime(updatedEvent.getEndDateTime());
-        existingEvent.setCategory(updatedEvent.getCategory());
-        existingEvent.setLocation(updatedEvent.getLocation());
-        existingEvent.setCoverImageUrl(updatedEvent.getCoverImageUrl());
-        existingEvent.setImageUrl(updatedEvent.getImageUrl());
-        
-        // Update relationships
-        if (updatedEventDTO.getTickets() != null) {
-            existingEvent.getTickets().clear();
-            existingEvent.getTickets().addAll(updatedEventDTO.getTickets().stream()
-                .map(ticketDTO -> {
-                    Tickets ticket = eventMapper.ticketDtoToEntity(ticketDTO);
-                    existingEvent.getTickets().add(ticket);
-                    return ticket;
-                })
-                .collect(Collectors.toSet()));
-        }
-        if (updatedEventDTO.getPerformers() != null) {
-            existingEvent.getPerformers().clear();
-            existingEvent.getPerformers().addAll(updatedEventDTO.getPerformers().stream()
-                .map(performerDTO -> {
-                    Performers performer = eventMapper.performerDtoToEntity(performerDTO);
-                    existingEvent.getPerformers().add(performer);
-                    return performer;
-                })
-                .collect(Collectors.toSet()));
-        }
-        
-        try {
-            Events savedEvent = eventRepository.save(existingEvent);
-            return eventMapper.toDto(savedEvent);
-        } catch (Exception e) {
-            throw new ApiException("Failed to update event: " + e.getMessage(), e);
-        }
+        existingEvent.setTickets(updatedEvent.getTickets());
+        existingEvent.setPerformers(updatedEvent.getPerformers());
+        existingEvent.setUpdatedBy(loggedInMember.getId());
+        existingEvent.setUpdateTimestamp(LocalDateTime.now());
+
+        Events savedEvent = eventRepository.save(existingEvent);
+
+        EventDTO savedEventDTO = eventMapper.toDto(savedEvent);
+        savedEventDTO.setTickets(eventMapper.toTicketDtoList(savedEvent.getTickets()));
+        savedEventDTO.setPerformers(eventMapper.toPerformerDtoList(savedEvent.getPerformers()));
+
+        responseDto.setMessage("Event Updated Successfully");
+        return responseDto;
     }
 
-    public void deleteEvent(String id) {
+    @Override
+    public void deleteEvent(String id, Member loggedInMember) {
         try {
             Events event = eventRepository.findByIdAndIsDeletedFalse(id);
             event.setIsDeleted(true);
@@ -209,20 +190,21 @@ public class EventServiceImpl implements EventService {
             throw new ApiException("Failed to delete event: " + e.getMessage(), e);
         }
     }
-
-    public List<TicketDTO> getTicketsForEvent(String eventId) {
+    @Override
+    public List<TicketDTO> getTicketsForEvent(String eventId, Member loggedInMember) {
         try {
             Events event = eventRepository.findByIdAndIsDeletedFalse(eventId);
-            return eventMapper.toTicketDtoList(new ArrayList<>(event.getTickets()));
+            return eventMapper.toTicketDtoList(event.getTickets());
         } catch (Exception e) {
             throw new ApiException("Failed to fetch tickets for event: " + e.getMessage(), e);
         }
     }
 
+    @Override
     public List<PerformerDTO> getPerformersForEvent(String eventId) {
         try {
             Events event = eventRepository.findByIdAndIsDeletedFalse(eventId);
-            return eventMapper.toPerformerDtoList(new ArrayList<>(event.getPerformers()));
+            return eventMapper.toPerformerDtoList(event.getPerformers());
         } catch (Exception e) {
             throw new ApiException("Failed to fetch performers for event: " + e.getMessage(), e);
         }
