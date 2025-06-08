@@ -15,10 +15,10 @@ public interface EventFacade {
     BaseResponseDto createEvent(EventDTO eventDTO, HttpServletRequest request);
     EventDTO getEventById(String id, HttpServletRequest request);
     PageResponseDTO<EventDTO> getAllEvents(int page, int size, HttpServletRequest request);
-    PageResponseDTO<EventDTO> getUserPosts(int page, int size, HttpServletRequest request);
+    PageResponseDTO<EventDTO> getUserEvents(int page, int size, HttpServletRequest request);
     BaseResponseDto updateEvent(String id, EventDTO updatedEventDTO, HttpServletRequest request);
     void deleteEvent(String id, HttpServletRequest request);
     List<TicketDTO> getTicketsForEvent(String eventId, HttpServletRequest request);
     List<PerformerDTO> getPerformersForEvent(String eventId, HttpServletRequest request);
-    PageResponseDTO<EventDTO> getEventsByCategory(int page, int size, String category, HttpServletRequest request);
+    PageResponseDTO<EventDTO> getEventsByCategory(int page, int size, String category, String eventId, HttpServletRequest request);
 }

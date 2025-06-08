@@ -22,7 +22,6 @@ public class EventDTO {
     private List<PerformerDTO> performers;
     private String instructions;
     private String termsAndConditions;
-    private boolean deleted;
     private LocalDateTime creationTimestamp;
     private String createdBy;
 }

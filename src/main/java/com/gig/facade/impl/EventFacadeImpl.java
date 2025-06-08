@@ -49,11 +49,11 @@ public class EventFacadeImpl implements EventFacade {
     }
 
     @Override
-    public PageResponseDTO<EventDTO> getEventsByCategory(int page, int size, String category, HttpServletRequest request) {
+    public PageResponseDTO<EventDTO> getEventsByCategory(int page, int size, String category, String eventId, HttpServletRequest request) {
         try {
             applicationUtilities.getLoggedInUser(request);
             long total = eventService.countEventsByCategory(category);
-            List<EventDTO> events = eventService.getEventsByCategory(page, size, category);
+            List<EventDTO> events = eventService.getEventsByCategory(page, size, category,eventId);
             return createPageResponse(events,page, size,total);
         } catch (Exception ex) {
             throw new ApiException(ex.getMessage(), ex);
@@ -73,11 +73,11 @@ public class EventFacadeImpl implements EventFacade {
     }
 
     @Override
-    public PageResponseDTO<EventDTO> getUserPosts(int page, int size, HttpServletRequest request) {
+    public PageResponseDTO<EventDTO> getUserEvents(int page, int size, HttpServletRequest request) {
         try {
             Member loggedInMember = applicationUtilities.getLoggedInUser(request);
-            List<EventDTO> events = eventService.getUserPosts(page, size, loggedInMember);
-            long totalElements = eventService.countUserPosts(loggedInMember);
+            List<EventDTO> events = eventService.getUserEvents(page, size, loggedInMember);
+            long totalElements = eventService.countUserEvents(loggedInMember);
             return createPageResponse(events, page, size, totalElements);
         } catch (Exception ex) {
             throw new ApiException(ex.getMessage(), ex);

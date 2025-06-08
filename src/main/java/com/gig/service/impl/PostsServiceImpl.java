@@ -1,4 +1,4 @@
-package com.gig.serviceImpl;
+package com.gig.service.impl;
 
 import com.gig.dto.BaseResponseDto;
 import com.gig.dto.CommentsDto;

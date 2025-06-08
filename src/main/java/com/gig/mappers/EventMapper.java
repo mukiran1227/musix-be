@@ -1,10 +1,11 @@
 package com.gig.mappers;
 
+import com.gig.dto.AttachmentsDto;
 import com.gig.dto.EventDTO;
 import com.gig.dto.TicketDTO;
 import com.gig.dto.PerformerDTO;
+import com.gig.models.Attachments;
 import com.gig.models.Events;
-import com.gig.models.Member;
 import com.gig.models.Tickets;
 import com.gig.models.Performers;
 import org.mapstruct.Mapper;
@@ -59,8 +60,8 @@ public interface EventMapper {
     @Mapping(target = "endDateTime", source = "endDateTime")
     @Mapping(target = "category", source = "category")
     @Mapping(target = "location", source = "location")
-    @Mapping(target = "coverImageUrl", expression = "java(AttachmentsMapper.INSTANCE.toDtoList(entity.getCoverImageUrl()))")
-    @Mapping(target = "imageUrl", expression = "java(AttachmentsMapper.INSTANCE.toDtoList(entity.getImageUrl()))")
+    @Mapping(target = "coverImageUrl", source = "coverImageUrl", qualifiedByName = "mapAttachmentsWithDeletedFlag")
+    @Mapping(target = "imageUrl", source = "imageUrl", qualifiedByName = "mapAttachmentsWithDeletedFlag")
     @Mapping(target = "instructions", source = "instructions")
     @Mapping(target = "termsAndConditions", source = "termsAndConditions")
     @Mapping(target = "creationTimestamp", source = "creationTimestamp")
@@ -84,6 +85,22 @@ public interface EventMapper {
     @Named("toTicketDtoList")
     default List<TicketDTO> toTicketDtoList(Set<Tickets> tickets) {
         return TicketMapper.INSTANCE.toDtoList(tickets);
+    }
+
+    @Named("mapAttachmentsWithDeletedFlag")
+    default List<AttachmentsDto> mapAttachmentsWithDeletedFlag(List<Attachments> attachments) {
+        return AttachmentsMapper.INSTANCE.toDtoList(attachments).stream()
+                .map(dto -> {
+                    dto.setDeleted(
+                            attachments.stream()
+                                    .filter(attachment -> attachment.getId().equals(dto.getId()))
+                                    .findFirst()
+                                    .map(Attachments::getIsDeleted)
+                                    .orElse(false)
+                    );
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
     @Named("toPerformerDtoList")

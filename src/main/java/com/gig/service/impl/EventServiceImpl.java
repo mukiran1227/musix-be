@@ -1,4 +1,4 @@
-package com.gig.serviceImpl;
+package com.gig.service.impl;
 
 import com.gig.dto.BaseResponseDto;
 import com.gig.dto.EventDTO;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class EventServiceImpl implements EventService {
+class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
 
@@ -56,9 +56,9 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventDTO> getEventsByCategory(int page, int size, String category) {
+    public List<EventDTO> getEventsByCategory(int page, int size, String category, String eventId) {
         int offset = (page - 1) * size;
-        List<Events> events = eventRepository.findByCategoryAndIsDeletedFalse(category, offset, size);
+        List<Events> events = eventRepository.findByCategoryAndIsDeletedFalse(category, offset, size,eventId);
         return events.stream()
                 .map(event -> {
                     EventDTO dto = EventMapper.INSTANCE.toDto(event);
@@ -79,7 +79,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventDTO> getUserPosts(int page, int size, Member loggedInMember) {
+    public List<EventDTO> getUserEvents(int page, int size, Member loggedInMember) {
         int offset = (page - 1) * size;
         List<Events> events = eventRepository.findByCreatedByAndIsDeletedFalse(loggedInMember.getId().toString(), offset, size);
         return events.stream()
@@ -94,7 +94,7 @@ public class EventServiceImpl implements EventService {
 
 
     @Override
-    public long countUserPosts(Member loggedInMember) {
+    public long countUserEvents(Member loggedInMember) {
         return eventRepository.countByCreatedByAndIsDeletedFalse(loggedInMember.getId().toString());
     }
 
@@ -106,8 +106,8 @@ public class EventServiceImpl implements EventService {
         }
         for (TicketDTO ticket : tickets) {
             if (ticket == null || ticket.getName() == null || ticket.getName().isEmpty() ||
-                ticket.getDescription() == null || ticket.getDescription().isEmpty() ||
-                ticket.getPrice() <= 0) {
+                    ticket.getDescription() == null || ticket.getDescription().isEmpty() ||
+                    ticket.getPrice() <= 0) {
                 throw new ApiException(INVALID_TICKETS);
             }
         }
@@ -118,8 +118,8 @@ public class EventServiceImpl implements EventService {
         }
         for (PerformerDTO performer : performers) {
             if (performer == null || performer.getName() == null || performer.getName().isEmpty() ||
-                performer.getRole() == null || performer.getRole().isEmpty() ||
-                performer.getImageUrl() == null || performer.getImageUrl().isEmpty()) {
+                    performer.getRole() == null || performer.getRole().isEmpty() ||
+                    performer.getImageUrl() == null || performer.getImageUrl().isEmpty()) {
                 throw new ApiException(INVALID_PERFORMERS);
             }
         }
@@ -149,13 +149,13 @@ public class EventServiceImpl implements EventService {
         validateEventDates(updatedEventDTO);
         validateTickets(updatedEventDTO.getTickets());
         validatePerformers(updatedEventDTO.getPerformers());
-        
+
         Events existingEvent = eventRepository.findByIdAndIsDeletedFalse(id);
         if (existingEvent == null) {
             throw new ApiException(String.format(EVENT_NOT_FOUND, id));
         }
         Events updatedEvent = EventMapper.INSTANCE.toEntity(updatedEventDTO);
-        
+
         existingEvent.setName(updatedEvent.getName());
         existingEvent.setDescription(updatedEvent.getDescription());
         existingEvent.setStartDateTime(updatedEvent.getStartDateTime());
@@ -201,8 +201,8 @@ public class EventServiceImpl implements EventService {
     }
 
     private void validateEventDates(EventDTO eventDTO) {
-        if (eventDTO.getStartDateTime() != null && eventDTO.getEndDateTime() != null && 
-            eventDTO.getStartDateTime().isAfter(eventDTO.getEndDateTime())) {
+        if (eventDTO.getStartDateTime() != null && eventDTO.getEndDateTime() != null &&
+                eventDTO.getStartDateTime().isAfter(eventDTO.getEndDateTime())) {
             throw new ApiException(INVALID_DATE_RANGE);
         }
     }

@@ -1,0 +1,23 @@
+package com.gig.facade;
+
+import com.gig.dto.CartAddItemDTO;
+import com.gig.dto.CartDTO;
+import com.gig.dto.OrderDTO;
+import com.gig.dto.TicketDTO;
+import com.gig.models.Cart;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.UUID;
+
+public interface TicketBookingFacade {
+    CartDTO addTicketToCart(List<CartAddItemDTO> cartAddItemDTO, HttpServletRequest request);
+    void removeTicketFromCart(UUID cartId, UUID ticketId, HttpServletRequest request);
+    CartDTO getCart(HttpServletRequest request);
+    OrderDTO checkoutCart(HttpServletRequest request);
+    OrderDTO createOrder(Cart cart, HttpServletRequest request);
+    List<OrderDTO> getOrdersByMember(HttpServletRequest request);
+    OrderDTO getOrderById(UUID orderId, HttpServletRequest request);
+    OrderDTO updateOrderStatus(UUID orderId, String status, HttpServletRequest request);
+    OrderDTO processPayment(UUID orderId, String paymentToken, HttpServletRequest request);
+    List<TicketDTO> getAvailableTickets(UUID eventId, HttpServletRequest request);
+}

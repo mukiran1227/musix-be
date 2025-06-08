@@ -1,4 +1,4 @@
-package com.gig.serviceImpl;
+package com.gig.service.impl;
 
 import com.gig.applicationUtilities.ApplicationConstants;
 import com.gig.applicationUtilities.ApplicationUtilities;
@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.gig.applicationUtilities.ApplicationConstants.INVALID_CREDENTIALS;
-import static com.gig.applicationUtilities.ApplicationConstants.MAIL_SENT;
 import static com.gig.applicationUtilities.ApplicationConstants.USER_LOGGED_OUT_SUCCESSFULLY;
 
 @Service

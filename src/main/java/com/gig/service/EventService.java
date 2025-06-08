@@ -13,12 +13,12 @@ public interface EventService {
     EventDTO getEventById(String id);
     List<EventDTO> getAllEvents(int page, int size);
     long countAllEvents();
-    List<EventDTO> getUserPosts(int page, int size, Member loggedInMember);
-    long countUserPosts(Member loggedInMember);
+    List<EventDTO> getUserEvents(int page, int size, Member loggedInMember);
+    long countUserEvents(Member loggedInMember);
     BaseResponseDto updateEvent(String id, EventDTO updatedEventDTO, Member loggedInMember);
     void deleteEvent(String id, Member loggedInMember);
 
-    List<EventDTO> getEventsByCategory(int page, int size, String category);
+    List<EventDTO> getEventsByCategory(int page, int size, String category, String eventId);
     long countEventsByCategory(String category);
     List<TicketDTO> getTicketsForEvent(String eventId, Member loggedInMember);
     List<PerformerDTO> getPerformersForEvent(String eventId);

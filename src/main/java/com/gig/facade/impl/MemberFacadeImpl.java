@@ -1,4 +1,4 @@
-package com.gig.facade;
+package com.gig.facade.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gig.applicationUtilities.ApplicationConstants;
@@ -12,6 +12,7 @@ import com.gig.dto.RegistrationDto;
 import com.gig.dto.RegistrationResponseDto;
 import com.gig.dto.UpdateMemberDto;
 import com.gig.exceptions.ApiException;
+import com.gig.facade.MemberFacade;
 import com.gig.mappers.MemberMapper;
 import com.gig.models.Craft;
 import com.gig.models.Login;
@@ -22,7 +23,7 @@ import com.gig.repository.MemberRepository;
 import com.gig.repository.PostsRepository;
 import com.gig.service.LoginService;
 import com.gig.service.MemberService;
-import com.gig.serviceImpl.LoginServiceImpl;
+import com.gig.service.impl.LoginServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;

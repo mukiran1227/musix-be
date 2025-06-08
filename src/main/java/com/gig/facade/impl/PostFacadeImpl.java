@@ -14,7 +14,7 @@ import com.gig.repository.CommentsRepository;
 import com.gig.repository.MemberRepository;
 import com.gig.repository.PostsRepository;
 import com.gig.service.PostService;
-import com.gig.serviceImpl.PostsServiceImpl;
+import com.gig.service.impl.PostsServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;

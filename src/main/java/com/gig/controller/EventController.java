@@ -65,8 +65,9 @@ public class EventController {
             @Parameter(description = "Category to filter events by") @PathVariable(value = "category") String category,
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "event id") @RequestParam("eventId") String eventId,
             HttpServletRequest request) {
-        PageResponseDTO<EventDTO> response = eventFacade.getEventsByCategory(page, size, category, request);
+        PageResponseDTO<EventDTO> response = eventFacade.getEventsByCategory(page, size, category,eventId, request);
         return ResponseEntity.ok(response);
     }
 
@@ -80,13 +81,13 @@ public class EventController {
         return ResponseEntity.ok(events);
     }
 
-    @GetMapping("/user/posts")
-    @Operation(summary = "Get logged-in user's posts", description = "Fetches all posts created by the logged-in user")
-    public ResponseEntity<PageResponseDTO<EventDTO>> getUserPosts(
+    @GetMapping("/user/events")
+    @Operation(summary = "Get logged-in user's posts", description = "Fetches all events created by the logged-in user")
+    public ResponseEntity<PageResponseDTO<EventDTO>> getUserEvents(
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
-        PageResponseDTO<EventDTO> events = eventFacade.getUserPosts(page, size, request);
+        PageResponseDTO<EventDTO> events = eventFacade.getUserEvents(page, size, request);
         return ResponseEntity.ok(events);
     }
 
