@@ -2,12 +2,15 @@ package com.gig.mappers;
 
 import com.gig.dto.AttachmentsDto;
 import com.gig.dto.EventDTO;
+import com.gig.dto.SimpleEventDTO;
 import com.gig.dto.TicketDTO;
 import com.gig.dto.PerformerDTO;
 import com.gig.models.Attachments;
 import com.gig.models.Events;
 import com.gig.models.Tickets;
 import com.gig.models.Performers;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.AfterMapping;
@@ -15,6 +18,7 @@ import org.mapstruct.Named;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,6 +26,20 @@ import java.util.stream.Collectors;
 public interface EventMapper {
 
     EventMapper INSTANCE = Mappers.getMapper(EventMapper.class);
+
+    @Mapping(target = "minPrice", expression = "java(events.getTickets().stream().mapToDouble(t -> t.getPrice()).min().orElse(0.0))")
+    @Mapping(target = "maxPrice", expression = "java(events.getTickets().stream().mapToDouble(t -> t.getPrice()).max().orElse(0.0))")
+    SimpleEventDTO toSimpleEventDTO(Events events);
+
+    @Mapping(target = "minPrice", expression = "java(eventDTO.getTickets().stream().mapToDouble(t -> t.getPrice()).min().orElse(0.0))")
+    @Mapping(target = "maxPrice", expression = "java(eventDTO.getTickets().stream().mapToDouble(t -> t.getPrice()).max().orElse(0.0))")
+    SimpleEventDTO toSimpleEventDTO(EventDTO eventDTO);
+
+    default List<SimpleEventDTO> toSimpleEventDTOList(List<Events> eventsList) {
+        return eventsList.stream()
+            .map(this::toSimpleEventDTO)
+            .collect(Collectors.toList());
+    }
 
     @Named("toEntity")
     @Mapping(target = "tickets", ignore = true)

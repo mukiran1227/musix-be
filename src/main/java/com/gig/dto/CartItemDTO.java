@@ -1,5 +1,6 @@
 package com.gig.dto;
 
+import com.gig.models.CartItem;
 import com.gig.models.Tickets;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,5 +24,26 @@ public class CartItemDTO {
         this.quantity = cartItem.getQuantity();
         this.unitPrice = cartItem.getUnitPrice();
         this.totalPrice = cartItem.getTotalPrice();
+    }
+
+    public static CartItemDTO fromEntity(CartItem cartItem) {
+        if (cartItem == null) return null;
+        CartItemDTO dto = new CartItemDTO();
+        dto.id = cartItem.getId();
+        dto.ticket = cartItem.getTicket();
+        dto.quantity = cartItem.getQuantity();
+        dto.unitPrice = cartItem.getUnitPrice();
+        dto.totalPrice = cartItem.getTotalPrice();
+        return dto;
+    }
+
+    public CartItem toEntity() {
+        CartItem cartItem = new CartItem();
+        cartItem.setId(this.id);
+        cartItem.setTicket(this.ticket);
+        cartItem.setQuantity(this.quantity);
+        cartItem.setUnitPrice(this.unitPrice);
+        cartItem.setTotalPrice(this.totalPrice);
+        return cartItem;
     }
 }

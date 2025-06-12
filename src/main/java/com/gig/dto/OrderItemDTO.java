@@ -10,7 +10,7 @@ import java.util.UUID;
 @Setter
 public class OrderItemDTO {
     private UUID id;
-    private Tickets ticket;
+    private TicketDTO ticket;
     private int quantity;
     private double unitPrice;
     private double totalPrice;
@@ -22,7 +22,7 @@ public class OrderItemDTO {
     
     public OrderItemDTO(com.gig.models.OrderItem orderItem) {
         this.id = orderItem.getId();
-        this.ticket = orderItem.getTicket();
+        this.ticket = orderItem.getTicket() != null ? new TicketDTO(orderItem.getTicket().getId()) : null;
         this.quantity = orderItem.getQuantity();
         this.unitPrice = orderItem.getUnitPrice();
         this.totalPrice = orderItem.getTotalPrice();

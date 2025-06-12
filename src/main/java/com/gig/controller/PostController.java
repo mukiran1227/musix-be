@@ -3,6 +3,8 @@ package com.gig.controller;
 import com.gig.dto.BaseResponseDto;
 import com.gig.dto.CommentsDto;
 import com.gig.dto.CreatePostDto;
+import com.gig.dto.LikeResponseDTO;
+import com.gig.dto.PageResponseDTO;
 import com.gig.dto.PaginationDto;
 import com.gig.dto.PostDto;
 import com.gig.facade.PostFacade;
@@ -42,6 +44,13 @@ public class PostController {
     @GetMapping("/get-post/{postId}")
     public ResponseEntity<PostDto> getPostById(@PathVariable(value = "postId") String postId , HttpServletRequest request){
         return postFacade.getPostById(postId,request);
+    }
+
+    @GetMapping("/{postId}/likes")
+    public ResponseEntity<PageResponseDTO<LikeResponseDTO>> getPostLikes(@PathVariable String postId, @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request) {
+        return postFacade.getLikesByPostId(postId, page, size, request);
     }
 
     @PutMapping("/update-post")

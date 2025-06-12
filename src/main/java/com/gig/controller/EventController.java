@@ -4,6 +4,7 @@ import com.gig.dto.BaseResponseDto;
 import com.gig.dto.EventDTO;
 import com.gig.dto.PageResponseDTO;
 import com.gig.dto.PerformerDTO;
+import com.gig.dto.SimpleEventDTO;
 import com.gig.dto.TicketDTO;
 import com.gig.facade.EventFacade;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,7 +12,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/v1/events")
@@ -61,33 +62,33 @@ public class EventController {
 
     @GetMapping("/category/{category}")
     @Operation(summary = "Get events by category", description = "Fetches events filtered by category with pagination")
-    public ResponseEntity<PageResponseDTO<EventDTO>> getEventsByCategory(
+    public ResponseEntity<PageResponseDTO<SimpleEventDTO>> getEventsByCategory(
             @Parameter(description = "Category to filter events by") @PathVariable(value = "category") String category,
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
-            @Parameter(description = "event id") @RequestParam("eventId") String eventId,
+            @Parameter(description = "event id") @RequestParam(value = "eventId",required = false) String eventId,
             HttpServletRequest request) {
-        PageResponseDTO<EventDTO> response = eventFacade.getEventsByCategory(page, size, category,eventId, request);
-        return ResponseEntity.ok(response);
+        PageResponseDTO<SimpleEventDTO> events = eventFacade.getEventsByCategory(page, size, category, eventId, request);
+        return ResponseEntity.ok(events);
     }
 
     @GetMapping("/fetch/events")
     @Operation(summary = "Get all events", description = "Fetches all active events with pagination")
-    public ResponseEntity<PageResponseDTO<EventDTO>> getAllEvents(
+    public ResponseEntity<PageResponseDTO<SimpleEventDTO>> getAllEvents(
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
-        PageResponseDTO<EventDTO> events = eventFacade.getAllEvents(page, size, request);
+        PageResponseDTO<SimpleEventDTO> events = eventFacade.getAllEvents(page, size, request);
         return ResponseEntity.ok(events);
     }
 
     @GetMapping("/user/events")
-    @Operation(summary = "Get logged-in user's posts", description = "Fetches all events created by the logged-in user")
-    public ResponseEntity<PageResponseDTO<EventDTO>> getUserEvents(
+    @Operation(summary = "Get logged-in user's events", description = "Fetches all events created by the logged-in user")
+    public ResponseEntity<PageResponseDTO<SimpleEventDTO>> getUserEvents(
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
-        PageResponseDTO<EventDTO> events = eventFacade.getUserEvents(page, size, request);
+        PageResponseDTO<SimpleEventDTO> events = eventFacade.getUserEvents(page, size, request);
         return ResponseEntity.ok(events);
     }
 

@@ -1,10 +1,11 @@
 package com.gig.dto;
 
+import com.gig.dto.CartItemDTO;
+import com.gig.dto.MemberDto;
 import com.gig.models.Cart;
-import com.gig.models.CartItem;
-import com.gig.models.Member;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -15,29 +16,19 @@ import java.util.stream.Collectors;
 public class CartDTO {
     private UUID id;
     private double totalAmount;
-    private List<CartItem> items;
+    private List<CartItemDTO> items;
     private boolean isActive;
-    private Member member;
+
 
     public CartDTO(Cart cart) {
         this.id = cart.getId();
         this.totalAmount = cart.getTotalAmount();
-        this.items = cart.getItems() != null ? 
-            cart.getItems().stream().collect(Collectors.toList()) : 
+        this.items = cart.getCartItems() != null ?
+            cart.getCartItems().stream()
+                .map(CartItemDTO::fromEntity)
+                .filter(item -> item != null)
+                .collect(Collectors.toList()) :
             null;
         this.isActive = cart.isActive();
-        this.member = cart.getMember();
-    }
-
-    public Cart toEntity() {
-        Cart cart = new Cart();
-        cart.setId(this.id);
-        cart.setTotalAmount(this.totalAmount);
-        if (this.items != null) {
-            cart.getItems().addAll(this.items);
-        }
-        cart.setActive(this.isActive);
-        cart.setMember(this.member);
-        return cart;
     }
 }

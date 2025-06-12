@@ -26,8 +26,8 @@ public class Cart extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
-    private Set<CartItem> items = new HashSet<>();
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    private Set<CartItem> cartItems = new HashSet<>();
 
     private double totalAmount;
     private boolean isActive = true;
@@ -41,17 +41,17 @@ public class Cart extends BaseEntity {
     }
 
     public void addItem(CartItem item) {
-        items.add(item);
+        cartItems.add(item);
         item.setCart(this);
     }
 
     public void removeItem(CartItem item) {
-        items.remove(item);
+        cartItems.remove(item);
         item.setCart(null);
     }
 
     public double calculateTotalAmount() {
-        return items.stream()
+        return cartItems.stream()
             .mapToDouble(CartItem::getTotalPrice)
             .sum();
     }

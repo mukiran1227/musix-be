@@ -3,6 +3,8 @@ package com.gig.facade;
 import com.gig.dto.BaseResponseDto;
 import com.gig.dto.CommentsDto;
 import com.gig.dto.CreatePostDto;
+import com.gig.dto.LikeResponseDTO;
+import com.gig.dto.PageResponseDTO;
 import com.gig.dto.PaginationDto;
 import com.gig.dto.PostDto;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,4 +28,7 @@ public interface PostFacade {
     ResponseEntity<PaginationDto> getLoggedInUserPosts(int limit, int offset,HttpServletRequest request);
 
     ResponseEntity<PaginationDto> getCommentsByPostId(String postId, int limit, int offset, HttpServletRequest request);
+
+    ResponseEntity<PageResponseDTO<LikeResponseDTO>> getLikesByPostId(String postId, int page, int size, HttpServletRequest request);
+    long getTotalLikes(String postId);
 }

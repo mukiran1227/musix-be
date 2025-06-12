@@ -2,9 +2,13 @@ package com.gig.facade.impl;
 
 import com.gig.dto.BaseResponseDto;
 import com.gig.dto.EventDTO;
+import com.gig.dto.SimpleEventDTO;
 import com.gig.dto.TicketDTO;
 import com.gig.dto.PerformerDTO;
 import com.gig.dto.PageResponseDTO;
+import com.gig.mappers.EventMapper;
+import java.util.List;
+import java.util.stream.Collectors;
 import com.gig.exceptions.ApiException;
 import com.gig.facade.EventFacade;
 import com.gig.models.Member;
@@ -49,36 +53,36 @@ public class EventFacadeImpl implements EventFacade {
     }
 
     @Override
-    public PageResponseDTO<EventDTO> getEventsByCategory(int page, int size, String category, String eventId, HttpServletRequest request) {
+    public PageResponseDTO<SimpleEventDTO> getEventsByCategory(int page, int size, String category, String eventId, HttpServletRequest request) {
         try {
             applicationUtilities.getLoggedInUser(request);
             long total = eventService.countEventsByCategory(category);
-            List<EventDTO> events = eventService.getEventsByCategory(page, size, category,eventId);
-            return createPageResponse(events,page, size,total);
+            List<SimpleEventDTO> events = eventService.getEventsByCategory(page, size, category,eventId);
+            return applicationUtilities.createPageResponse(events,page, size,total);
         } catch (Exception ex) {
             throw new ApiException(ex.getMessage(), ex);
         }
     }
 
     @Override
-    public PageResponseDTO<EventDTO> getAllEvents(int page, int size, HttpServletRequest request) {
+    public PageResponseDTO<SimpleEventDTO> getAllEvents(int page, int size, HttpServletRequest request) {
         try {
             applicationUtilities.getLoggedInUser(request);
-            List<EventDTO> events = eventService.getAllEvents(page, size);
+            List<SimpleEventDTO> events = eventService.getAllEvents(page, size);
             long totalElements = eventService.countAllEvents();
-            return createPageResponse(events, page, size, totalElements);
+            return applicationUtilities.createPageResponse(events, page, size, totalElements);
         } catch (Exception ex) {
             throw new ApiException(ex.getMessage(), ex);
         }
     }
 
     @Override
-    public PageResponseDTO<EventDTO> getUserEvents(int page, int size, HttpServletRequest request) {
+    public PageResponseDTO<SimpleEventDTO> getUserEvents(int page, int size, HttpServletRequest request) {
         try {
             Member loggedInMember = applicationUtilities.getLoggedInUser(request);
-            List<EventDTO> events = eventService.getUserEvents(page, size, loggedInMember);
+            List<SimpleEventDTO> events = eventService.getUserEvents(page, size, loggedInMember);
             long totalElements = eventService.countUserEvents(loggedInMember);
-            return createPageResponse(events, page, size, totalElements);
+            return applicationUtilities.createPageResponse(events, page, size, totalElements);
         } catch (Exception ex) {
             throw new ApiException(ex.getMessage(), ex);
         }
@@ -116,16 +120,7 @@ public class EventFacadeImpl implements EventFacade {
         }
     }
 
-    private PageResponseDTO<EventDTO> createPageResponse(List<EventDTO> content, int page, int size, long totalElements) {
-        PageResponseDTO<EventDTO> response = new PageResponseDTO<>();
-        response.setContent(content);
-        response.setPageNumber(page);
-        response.setPageSize(size);
-        response.setTotalElements(totalElements);
-        response.setTotalPages((int) Math.ceil((double) totalElements / size));
-        response.setLast(page >= (response.getTotalPages() - 1));
-        return response;
-    }
+
 
     @Override
     public List<PerformerDTO> getPerformersForEvent(String eventId, HttpServletRequest request) {

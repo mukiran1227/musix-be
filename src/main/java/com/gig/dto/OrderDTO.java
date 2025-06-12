@@ -15,33 +15,22 @@ import java.util.stream.Collectors;
 @Setter
 public class OrderDTO {
     private UUID id;
-    private Member member;
     private double totalAmount;
     private String status;
     private String paymentStatus;
-    private List<OrderItem> items;
+    private String qrCodeData;
+    private List<OrderItemDTO> items;
 
     public OrderDTO(Order order) {
         this.id = order.getId();
-        this.member = order.getMember();
         this.totalAmount = order.getTotalAmount();
         this.status = order.getStatus();
+        this.qrCodeData = order.getQrCodeData();
         this.paymentStatus = order.getPaymentStatus();
-        this.items = order.getItems() != null ?
-                new ArrayList<>(order.getItems()) :
-            null;
-    }
-
-    public Order toEntity() {
-        Order order = new Order();
-        order.setId(this.id);
-        order.setMember(this.member);
-        order.setTotalAmount(this.totalAmount);
-        order.setStatus(this.status);
-        order.setPaymentStatus(this.paymentStatus);
-        if (this.items != null) {
-            order.getItems().addAll(this.items);
-        }
-        return order;
+        this.items = order.getItems() != null
+                ? order.getItems().stream()
+                .map(OrderItemDTO::new)
+                .collect(Collectors.toList())
+                : null;
     }
 }

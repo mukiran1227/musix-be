@@ -20,26 +20,26 @@ public class CartController {
 
     private final TicketBookingFacade ticketBookingFacade;
 
-    @PostMapping
-    public ResponseEntity<CartDTO> addTicketToCart(@RequestBody List<CartAddItemDTO> cartAddItemDTO, HttpServletRequest request) {
+    @PostMapping("/add-items")
+    public ResponseEntity<CartDTO> addToCart(@RequestBody List<CartAddItemDTO> cartAddItemDTO, HttpServletRequest request) {
         CartDTO response = ticketBookingFacade.addTicketToCart(cartAddItemDTO, request);
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{cartId}/ticket/{ticketId}")
-    public ResponseEntity<Void> removeTicketFromCart(@PathVariable UUID cartId, @PathVariable UUID ticketId, HttpServletRequest request) {
-        ticketBookingFacade.removeTicketFromCart(cartId, ticketId, request);
+    @DeleteMapping("/remove-item/{ticketId}")
+    public ResponseEntity<Void> removeFromCart(@PathVariable UUID ticketId, HttpServletRequest request) {
+        ticketBookingFacade.removeTicketFromCart(request, ticketId);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/checkout")
+    @PostMapping("/checkout")
     public ResponseEntity<Void> checkoutCart(HttpServletRequest request) {
         ticketBookingFacade.checkoutCart(request);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping
-    public ResponseEntity<CartDTO> getCart(HttpServletRequest request) {
+    @GetMapping("/current")
+    public ResponseEntity<CartDTO> getCurrentCart(HttpServletRequest request) {
         CartDTO response = ticketBookingFacade.getCart(request);
         return ResponseEntity.ok(response);
     }

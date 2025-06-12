@@ -1,5 +1,6 @@
 package com.gig.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -13,7 +14,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity(name = "cart_items")
-@EqualsAndHashCode(callSuper = true)
 public class CartItem extends BaseEntity {
     @Id
     @UuidGenerator
@@ -22,6 +22,7 @@ public class CartItem extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "cart_id")
+    @JsonIgnore
     private Cart cart;
 
     @ManyToOne

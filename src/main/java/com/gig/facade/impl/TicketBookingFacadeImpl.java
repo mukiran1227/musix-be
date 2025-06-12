@@ -3,32 +3,33 @@ package com.gig.facade.impl;
 import com.gig.applicationUtilities.ApplicationUtilities;
 import com.gig.dto.CartAddItemDTO;
 import com.gig.dto.CartDTO;
+import com.gig.dto.CartItemDTO;
 import com.gig.dto.OrderDTO;
 import com.gig.dto.TicketDTO;
 import com.gig.facade.TicketBookingFacade;
 import com.gig.models.Cart;
 import com.gig.models.Member;
 import com.gig.models.Order;
-import com.gig.models.Tickets;
-import com.gig.repository.TicketRepository;
 import com.gig.service.CartService;
 import com.gig.service.OrderService;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.persistence.Table;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.collections4.CollectionUtils.emptyIfNull;
+
 @Component
 @RequiredArgsConstructor
-@SecurityRequirement(name = "Authorization")
 public class TicketBookingFacadeImpl implements TicketBookingFacade {
 
     private final CartService cartService;
     private final OrderService orderService;
-    private final TicketRepository ticketRepository;
     private final ApplicationUtilities applicationUtilities;
 
     @Override
@@ -39,17 +40,27 @@ public class TicketBookingFacadeImpl implements TicketBookingFacade {
     }
 
     @Override
-    public void removeTicketFromCart(UUID cartId, UUID ticketId, HttpServletRequest request) {
+    public void removeTicketFromCart(HttpServletRequest request, UUID ticketId) {
         Member loggedInMember = applicationUtilities.getLoggedInUser(request);
-        cartService.removeTicketFromCart(cartId, ticketId,loggedInMember);
+        Cart cart = cartService.getCartByMember(loggedInMember);
+        cartService.removeTicketFromCart(cart.getId(), ticketId, loggedInMember);
     }
 
     @Override
+    @Transactional
     public CartDTO getCart(HttpServletRequest request) {
         Member loggedInMember = applicationUtilities.getLoggedInUser(request);
-        Cart cart = cartService.getCartByMember(loggedInMember);
-        return new CartDTO(cart);
+        CartDTO CartDTO = cartService.getCartDTOWithItems(loggedInMember);
+        return CartDTO;
     }
+
+    private void mapCartItems(Cart cart) {
+        if (cart != null && cart.getCartItems() != null) {
+            cart.getCartItems().forEach(item -> {});
+        }
+    }
+
+
 
     @Override
     public OrderDTO checkoutCart(HttpServletRequest request) {

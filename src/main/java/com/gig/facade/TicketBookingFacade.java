@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public interface TicketBookingFacade {
     CartDTO addTicketToCart(List<CartAddItemDTO> cartAddItemDTO, HttpServletRequest request);
-    void removeTicketFromCart(UUID cartId, UUID ticketId, HttpServletRequest request);
+    void removeTicketFromCart(HttpServletRequest request, UUID ticketId);
     CartDTO getCart(HttpServletRequest request);
     OrderDTO checkoutCart(HttpServletRequest request);
     OrderDTO createOrder(Cart cart, HttpServletRequest request);

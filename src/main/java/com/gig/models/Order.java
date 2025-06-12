@@ -15,7 +15,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity(name = "orders")
-@EqualsAndHashCode(callSuper = true)
 public class Order extends BaseEntity {
     @Id
     @UuidGenerator
@@ -33,6 +32,9 @@ public class Order extends BaseEntity {
     private String status;
     private String paymentStatus;
     private String paymentToken;
+    
+    @Column(columnDefinition = "TEXT")
+    private String qrCodeData;
 
     public Order() {
         this.status = "PENDING";

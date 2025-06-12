@@ -4,6 +4,8 @@ import com.gig.applicationUtilities.ApplicationUtilities;
 import com.gig.dto.BaseResponseDto;
 import com.gig.dto.CommentsDto;
 import com.gig.dto.CreatePostDto;
+import com.gig.dto.LikeResponseDTO;
+import com.gig.dto.PageResponseDTO;
 import com.gig.dto.PaginationDto;
 import com.gig.dto.PostDto;
 import com.gig.facade.PostFacade;
@@ -11,6 +13,7 @@ import com.gig.models.Comments;
 import com.gig.models.Member;
 import com.gig.models.Posts;
 import com.gig.repository.CommentsRepository;
+import com.gig.repository.LikeRepository;
 import com.gig.repository.MemberRepository;
 import com.gig.repository.PostsRepository;
 import com.gig.service.PostService;
@@ -49,6 +52,9 @@ public class PostFacadeImpl implements PostFacade {
 
     @Autowired
     private CommentsRepository commentsRepository;
+
+    @Autowired
+    private LikeRepository likeRepository;
 
     @Autowired
     private MemberRepository memberRepository;
@@ -237,4 +243,18 @@ public class PostFacadeImpl implements PostFacade {
         return new ResponseEntity<>(paginationDto,HttpStatus.OK);
     }
 
+    @Override
+    public ResponseEntity<PageResponseDTO<LikeResponseDTO>> getLikesByPostId(String postId, int page, int size, HttpServletRequest request) {
+        int offset = Math.max(0, (page - 1) * size);
+        List<LikeResponseDTO> results = likeRepository.findLikesByPostIdWithDetails(postId, offset, size);
+        long totalLikes = likeRepository.countLikesByPostId(postId);
+        int totalPages = (int) Math.ceil((double) totalLikes / size);
+        PageResponseDTO<LikeResponseDTO> pageResponse = applicationUtilities.createPageResponse(results, totalPages, size, totalLikes);
+        return ResponseEntity.ok(pageResponse);
+    }
+
+    @Override
+    public long getTotalLikes(String postId) {
+        return likeRepository.countLikesByPostId(postId);
+    }
 }

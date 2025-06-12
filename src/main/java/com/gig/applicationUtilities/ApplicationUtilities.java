@@ -1,5 +1,7 @@
 package com.gig.applicationUtilities;
 
+import com.gig.dto.PageResponseDTO;
+import com.gig.dto.SimpleEventDTO;
 import com.gig.enums.LoginStatusEnum;
 import com.gig.models.Login;
 import com.gig.models.Member;
@@ -17,6 +19,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 @Component
 public class ApplicationUtilities {
@@ -63,5 +66,16 @@ public class ApplicationUtilities {
         Login login = loginRepository.findByTokenAndStatus(authToken, LoginStatusEnum.LOGGED_IN.toString());
         Assert.notNull(login, "Couldn't find login..!");
         return login;
+    }
+
+    public <T> PageResponseDTO<T> createPageResponse(List<T> content, int page, int size, long totalElements) {
+        PageResponseDTO<T> response = new PageResponseDTO<>();
+        response.setContent(content);
+        response.setPageNumber(page);
+        response.setPageSize(size);
+        response.setTotalElements(totalElements);
+        response.setTotalPages((int) Math.ceil((double) totalElements / size));
+        response.setLast(page >= (response.getTotalPages() - 1));
+        return response;
     }
 }

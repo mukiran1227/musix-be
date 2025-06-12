@@ -3,6 +3,7 @@ package com.gig.service.impl;
 import com.gig.dto.BaseResponseDto;
 import com.gig.dto.EventDTO;
 import com.gig.dto.PerformerDTO;
+import com.gig.dto.SimpleEventDTO;
 import com.gig.dto.TicketDTO;
 import com.gig.exceptions.ApiException;
 import com.gig.mappers.EventMapper;
@@ -43,28 +44,20 @@ class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventDTO> getAllEvents(int page, int size) {
-        int offset = (page - 1) * size;
+    public List<SimpleEventDTO> getAllEvents(int page, int size) {
+        int offset = Math.max(0, (page - 1) * size);
         List<Events> events = eventRepository.findAllByIsDeletedFalse(offset, size);
         return events.stream()
-                .map(event -> {
-                    EventDTO dto = EventMapper.INSTANCE.toDto(event);
-                    EventMapper.INSTANCE.afterToDto(event, dto);
-                    return dto;
-                })
+                .map(EventMapper.INSTANCE::toSimpleEventDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<EventDTO> getEventsByCategory(int page, int size, String category, String eventId) {
-        int offset = (page - 1) * size;
+    public List<SimpleEventDTO> getEventsByCategory(int page, int size, String category, String eventId) {
+        int offset = Math.max(0, (page - 1) * size);
         List<Events> events = eventRepository.findByCategoryAndIsDeletedFalse(category, offset, size,eventId);
         return events.stream()
-                .map(event -> {
-                    EventDTO dto = EventMapper.INSTANCE.toDto(event);
-                    EventMapper.INSTANCE.afterToDto(event, dto);
-                    return dto;
-                })
+                .map(EventMapper.INSTANCE::toSimpleEventDTO)
                 .collect(Collectors.toList());
     }
 
@@ -79,16 +72,12 @@ class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventDTO> getUserEvents(int page, int size, Member loggedInMember) {
-        int offset = (page - 1) * size;
+    public List<SimpleEventDTO> getUserEvents(int page, int size, Member loggedInMember) {
+        int offset = Math.max(0, (page - 1) * size);
         List<Events> events = eventRepository.findByCreatedByAndIsDeletedFalse(loggedInMember.getId().toString(), offset, size);
         return events.stream()
-                .map(event -> {
-                    EventDTO dto = EventMapper.INSTANCE.toDto(event);
-                    EventMapper.INSTANCE.afterToDto(event, dto);
-                    return dto;
-                })
-                .toList();
+                .map(EventMapper.INSTANCE::toSimpleEventDTO)
+                .collect(Collectors.toList());
     }
 
 
