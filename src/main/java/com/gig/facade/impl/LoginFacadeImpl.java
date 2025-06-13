@@ -113,8 +113,13 @@ public class LoginFacadeImpl implements LoginFacade {
             Member member = memberRepository.findByEmailAddress(verifyRequest.getEmailAddress(), false);
             if(ObjectUtils.isNotEmpty(member)) {
                 EmailDto emailDto = new EmailDto();
-                emailDto.setSubject("Reset Password Request");
-                emailDto.setTemplateName("ForgotPasswordEmailTemplate");
+                if (Boolean.TRUE.equals(member.getIsVerified())) {
+                    emailDto.setSubject("Reset Password Request");
+                    emailDto.setTemplateName("ForgotPasswordEmailTemplate");
+                } else {
+                    emailDto.setSubject("Verify Your Account");
+                    emailDto.setTemplateName("AccountVerificationEmailTemplate");
+                }
                 baseResponseDto = loginService.generateOtp(verifyRequest.getEmailAddress(), baseResponseDto, member, emailDto);
             }
         } catch (Exception e) {

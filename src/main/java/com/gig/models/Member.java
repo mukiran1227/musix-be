@@ -44,4 +44,6 @@ public class Member extends BaseEntity{
     private String location;
     @Column(name = "username")
     private String username;
+    @Column(name = "craft")
+    private String craft;
 }

@@ -21,4 +21,5 @@ public class MemberDto extends BaseResponseDto{
     private String bio;
     private String memberType;
     private String username;
+    private String craft;
 }

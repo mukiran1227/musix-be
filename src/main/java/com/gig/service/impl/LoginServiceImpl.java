@@ -98,9 +98,16 @@ public class LoginServiceImpl implements LoginService {
             Assert.notNull(member, ApplicationConstants.LOGIN_NOT_FOUND);
             boolean isPasswordMatch = applicationUtilities.isPasswordMatched(loginDTO.getPassword(), member.getPassword());
             Assert.isTrue(isPasswordMatch, INVALID_CREDENTIALS);
+            
             if(Boolean.FALSE.equals(member.getIsVerified())){
-                throw new ApiException("Account is not verified ,verify your account to continue");
+                // Generate and send OTP for unverified user
+                EmailDto emailDto = new EmailDto();
+                emailDto.setSubject("Verify Your Account");
+                emailDto.setTemplateName("AccountVerificationEmailTemplate");
+                generateOtp(member.getEmailAddress(), new BaseResponseDto(), member, emailDto);
+                throw new ApiException("Account not verified. An OTP has been sent to your email.");
             }
+            
             saveLoginDetails(httpServletRequest, login, member);
         }catch (Exception ex){
             ex.printStackTrace();
