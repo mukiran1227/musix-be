@@ -1,6 +1,7 @@
 package com.gig.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.gig.models.Tickets;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,12 @@ public class TicketDTO {
     private String description;
     private double price;
 
-    public TicketDTO(UUID id) {
-        this.id = id;
+
+    public TicketDTO(Tickets tickets) {
+        this.id = tickets.getId();
+        this.name = tickets.getName();
+        this.description = tickets.getDescription();
+        this.price = tickets.getPrice();
     }
+
 }

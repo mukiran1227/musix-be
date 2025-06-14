@@ -13,7 +13,14 @@ import org.springframework.stereotype.Service;
 @Service
 public interface CartService {
     Cart addTicketToCart(List<CartAddItemDTO> cartAddItemDTOs, Member member);
-    void removeTicketFromCart(UUID cartId, UUID ticketId, Member member);
+    /**
+     * Removes a ticket from the cart
+     * @param cartId ID of the cart
+     * @param ticketId ID of the ticket to remove
+     * @param member The logged-in member for authorization
+     * @return A success message indicating the item was removed
+     */
+    String removeTicketFromCart(UUID cartId, UUID ticketId, Member member);
     Cart getCartByMember(Member loggedInMember);
     void checkoutCart(UUID cartId);
     CartItem createOrUpdateCartItem(Cart cart, Tickets ticket, int quantity);

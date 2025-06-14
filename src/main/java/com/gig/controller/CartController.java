@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 
+import com.gig.dto.BaseResponseDto;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,9 +30,11 @@ public class CartController {
     }
 
     @DeleteMapping("/remove-item/{ticketId}")
-    public ResponseEntity<Void> removeFromCart(@PathVariable UUID ticketId, HttpServletRequest request) {
-        ticketBookingFacade.removeTicketFromCart(request, ticketId);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<BaseResponseDto> removeFromCart(@PathVariable UUID ticketId, HttpServletRequest request) {
+        String message = ticketBookingFacade.removeTicketFromCart(request, ticketId);
+        BaseResponseDto response = new BaseResponseDto();
+        response.setMessage(message);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/checkout")

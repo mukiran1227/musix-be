@@ -151,7 +151,6 @@ public class EventServiceImpl implements EventService {
         }
         for (TicketDTO ticket : tickets) {
             if (ticket == null || ticket.getName() == null || ticket.getName().isEmpty() ||
-                    ticket.getDescription() == null || ticket.getDescription().isEmpty() ||
                     ticket.getPrice() <= 0) {
                 throw new ApiException(INVALID_TICKETS);
             }
@@ -163,8 +162,7 @@ public class EventServiceImpl implements EventService {
         }
         for (PerformerDTO performer : performers) {
             if (performer == null || performer.getName() == null || performer.getName().isEmpty() ||
-                    performer.getRole() == null || performer.getRole().isEmpty() ||
-                    performer.getImageUrl() == null || performer.getImageUrl().isEmpty()) {
+                    performer.getRole() == null || performer.getRole().isEmpty()) {
                 throw new ApiException(INVALID_PERFORMERS);
             }
         }

@@ -16,9 +16,10 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -75,64 +76,63 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public Cart addTicketToCart(List<CartAddItemDTO> cartAddItemDTOs, Member loggedInMember) {
         Cart cart = getOrCreateCart(loggedInMember);
-        Set<CartItem> updatedItems = new HashSet<>();
+        
+        // First, load all existing cart items for this cart
+        Map<UUID, CartItem> existingItems = new HashMap<>();
+        for (CartItem existingItem : cart.getCartItems()) {
+            existingItems.put(existingItem.getTicket().getId(), existingItem);
+        }
 
+        // Process each item in the request
         for (CartAddItemDTO dto : cartAddItemDTOs) {
             Tickets ticket = ticketRepository.findById(dto.getTicketId())
                     .orElseThrow(() -> new RuntimeException("Ticket not found: " + dto.getTicketId()));
 
-            // Find existing cart item
-            CartItem cartItem = cartItemRepository.findByCartIdAndTicketId(cart.getId(), dto.getTicketId())
-                    .orElseGet(() -> {
-                        CartItem newItem = new CartItem();
-                        newItem.setCart(cart);
-                        newItem.setTicket(ticket);
-                        newItem.setQuantity(0);
-                        newItem.setUnitPrice(ticket.getPrice());
-                        return newItem;
-                    });
-
-            // Update quantity and total price
-            int newQuantity = cartItem.getQuantity() + dto.getQuantity();
-            cartItem.setQuantity(newQuantity);
-            cartItem.setTotalPrice(newQuantity * cartItem.getUnitPrice());
-
-            // Save cart item
-            CartItem savedItem = cartItemRepository.save(cartItem);
-            updatedItems.add(savedItem);
+            // Check if this ticket already exists in the cart
+            CartItem cartItem = existingItems.get(ticket.getId());
+            
+            if (cartItem == null) {
+                // Create new cart item if it doesn't exist
+                cartItem = new CartItem();
+                cartItem.setCart(cart);
+                cartItem.setTicket(ticket);
+                cartItem.setQuantity(dto.getQuantity());
+                cartItem.setUnitPrice(ticket.getPrice());
+                cartItem.setTotalPrice(dto.getQuantity() * ticket.getPrice());
+                cart.addItem(cartItem);
+            } else {
+                // Update existing cart item
+                int newQuantity = cartItem.getQuantity() + dto.getQuantity();
+                cartItem.setQuantity(newQuantity);
+                cartItem.setTotalPrice(newQuantity * cartItem.getUnitPrice());
+            }
+            
+            // Save the cart item
+            cartItemRepository.save(cartItem);
         }
-
-        // Set the updated items to the cart
-        cart.setCartItems(updatedItems);
         
         // Calculate and update total amount
-        double totalAmount = updatedItems.stream()
+        double totalAmount = cart.getCartItems().stream()
                 .mapToDouble(CartItem::getTotalPrice)
                 .sum();
         cart.setTotalAmount(totalAmount);
 
         // Save the cart
-        Cart savedCart = cartRepository.save(cart);
-        
-        // Fetch the cart with its items using the repository method
-        return cartRepository.findByIdWithItems(savedCart.getId())
-                .orElseGet(() -> {
-                    // Fallback in case the query doesn't return the cart
-                    List<CartItem> cartItems = cartItemRepository.findAllByCartIdNative(savedCart.getId().toString());
-                    savedCart.setCartItems(new HashSet<>(cartItems));
-                    return savedCart;
-                });
+        return cartRepository.save(cart);
     }
 
 
     @Transactional
-    public void removeTicketFromCart(UUID cartId, UUID ticketId, Member loggedInMember) {
+    public String removeTicketFromCart(UUID cartId, UUID ticketId, Member loggedInMember) {
         Cart cart = cartRepository.findById(cartId)
             .orElseThrow(() -> new RuntimeException("Cart not found"));
             
         CartItem cartItem = cartItemRepository.findByCartIdAndTicketId(cartId, ticketId)
             .orElseThrow(() -> new RuntimeException("Cart item not found"));
 
+        // Get ticket name for the success message before removing
+        String ticketName = cartItem.getTicket() != null ? cartItem.getTicket().getName() : "item";
+        
         cart.getCartItems().remove(cartItem);
         cartItemRepository.delete(cartItem);
         
@@ -143,6 +143,8 @@ public class CartServiceImpl implements CartService {
         cart.setTotalAmount(totalAmount);
         
         cartRepository.save(cart);
+        
+        return String.format("Successfully removed %s from your cart.", ticketName);
     }
 
     @Transactional
@@ -162,10 +164,11 @@ public class CartServiceImpl implements CartService {
         if (ObjectUtils.isNotEmpty(cart)) {
             List<CartItem> cartItems = cartItemRepository.findAllByCartIdNative(cart.getId().toString());
 
-            // Manually set the cartItems into the cart entity
-            cart.setCartItems(new HashSet<>(cartItems));
+            // Clear existing items and add all new ones without replacing the collection
+            cart.getCartItems().clear();
+            cart.getCartItems().addAll(cartItems);
 
-            // Optionally update the total if needed
+            // Update the total amount
             double totalAmount = cartItems.stream()
                     .mapToDouble(CartItem::getTotalPrice)
                     .sum();
@@ -174,8 +177,7 @@ public class CartServiceImpl implements CartService {
             // Map to DTO
             return new CartDTO(cart);
         }
-
-        return null; // or throw exception, or return empty DTO
+        return null;
     }
 
 

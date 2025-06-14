@@ -43,10 +43,10 @@ public class TicketBookingFacadeImpl implements TicketBookingFacade {
     }
 
     @Override
-    public void removeTicketFromCart(HttpServletRequest request, UUID ticketId) {
+    public String removeTicketFromCart(HttpServletRequest request, UUID ticketId) {
         Member loggedInMember = applicationUtilities.getLoggedInUser(request);
         Cart cart = cartService.getCartByMember(loggedInMember);
-        cartService.removeTicketFromCart(cart.getId(), ticketId, loggedInMember);
+        return cartService.removeTicketFromCart(cart.getId(), ticketId, loggedInMember);
     }
 
     @Override

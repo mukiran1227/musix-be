@@ -8,10 +8,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", 
-        uses = {TicketMapper.class, PerformerMapper.class, AttachmentsMapper.class},
-        unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE)
-public interface EventMapper {
+@org.springframework.transaction.annotation.Transactional
+@org.mapstruct.Mapper(uses = {TicketMapper.class, PerformerMapper.class, AttachmentsMapper.class})
+public interface EventMapper extends com.gig.config.MapperConfig {
 
 
     @Named("toSimpleEventDTO")

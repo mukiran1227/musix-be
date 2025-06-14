@@ -12,7 +12,13 @@ import java.util.UUID;
 
 public interface TicketBookingFacade {
     CartDTO addTicketToCart(List<CartAddItemDTO> cartAddItemDTO, HttpServletRequest request);
-    void removeTicketFromCart(HttpServletRequest request, UUID ticketId);
+    /**
+     * Removes a ticket from the user's cart
+     * @param request The HTTP request containing the user's authentication token
+     * @param ticketId ID of the ticket to remove
+     * @return A success message indicating the item was removed
+     */
+    String removeTicketFromCart(HttpServletRequest request, UUID ticketId);
     CartDTO getCart(HttpServletRequest request);
     OrderIdResponse checkoutCart(HttpServletRequest request);
     OrderDTO createOrder(Cart cart, HttpServletRequest request);

@@ -20,7 +20,6 @@ public interface CartItemRepository extends JpaRepository<CartItem, UUID> {
     @Transactional
     void deleteAllByIdInBatch(@Param("ids") List<UUID> ids);
     
-    List<CartItem> findByCartId(UUID cartId);
     Optional<CartItem> findByCartIdAndTicketId(UUID cartId, UUID ticketId);
 
     @Query(value = "SELECT * FROM cart_items WHERE cart_id = :cartId", nativeQuery = true)

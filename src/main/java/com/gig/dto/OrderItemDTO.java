@@ -17,17 +17,20 @@ public class OrderItemDTO {
     private String ticketNumber;
     private String seatNumber;
     private String section;
-    
-    public OrderItemDTO() {}
-    
+
     public OrderItemDTO(com.gig.models.OrderItem orderItem) {
         this.id = orderItem.getId();
-        this.ticket = orderItem.getTicket() != null ? new TicketDTO(orderItem.getTicket().getId()) : null;
         this.quantity = orderItem.getQuantity();
         this.unitPrice = orderItem.getUnitPrice();
         this.totalPrice = orderItem.getTotalPrice();
         this.ticketNumber = orderItem.getTicketNumber();
         this.seatNumber = orderItem.getSeatNumber();
         this.section = orderItem.getSection();
+        
+        // Set ticket details if available
+        if (orderItem.getTicket() != null) {
+            Tickets ticket = orderItem.getTicket();
+            this.ticket = new TicketDTO(ticket);
+        }
     }
 }
