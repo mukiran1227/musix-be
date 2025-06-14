@@ -1,32 +1,20 @@
 package com.gig.mappers;
 
-import com.gig.dto.AttachmentsDto;
-import com.gig.dto.EventDTO;
-import com.gig.dto.SimpleEventDTO;
-import com.gig.dto.TicketDTO;
-import com.gig.dto.PerformerDTO;
-import com.gig.models.Attachments;
-import com.gig.models.Events;
-import com.gig.models.Tickets;
-import com.gig.models.Performers;
+import com.gig.dto.*;
+import com.gig.models.*;
+import org.mapstruct.*;
+
 import java.util.List;
-import java.util.stream.Collectors;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Named;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.factory.Mappers;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", uses = {TicketMapper.class, PerformerMapper.class})
+@Mapper(componentModel = "spring", 
+        uses = {TicketMapper.class, PerformerMapper.class, AttachmentsMapper.class},
+        unmappedTargetPolicy = org.mapstruct.ReportingPolicy.IGNORE)
 public interface EventMapper {
 
-    EventMapper INSTANCE = Mappers.getMapper(EventMapper.class);
 
+    @Named("toSimpleEventDTO")
     @Mapping(target = "minPrice", expression = "java(events.getTickets().stream().mapToDouble(t -> t.getPrice()).min().orElse(0.0))")
     @Mapping(target = "maxPrice", expression = "java(events.getTickets().stream().mapToDouble(t -> t.getPrice()).max().orElse(0.0))")
     SimpleEventDTO toSimpleEventDTO(Events events);
@@ -36,93 +24,112 @@ public interface EventMapper {
     SimpleEventDTO toSimpleEventDTO(EventDTO eventDTO);
 
     default List<SimpleEventDTO> toSimpleEventDTOList(List<Events> eventsList) {
+        if (eventsList == null) {
+            return List.of();
+        }
         return eventsList.stream()
             .map(this::toSimpleEventDTO)
             .collect(Collectors.toList());
     }
 
-    @Named("toEntity")
-    @Mapping(target = "tickets", ignore = true)
-    @Mapping(target = "performers", ignore = true)
-    @Mapping(target = "createdBy", source = "createdBy")
-    @Mapping(target = "isDeleted", constant = "false")
-    @Mapping(target = "creationTimestamp", expression = "java(java.time.LocalDateTime.now())")
-    @Mapping(target = "updateTimestamp", expression = "java(java.time.LocalDateTime.now())")
-    Events toEntity(EventDTO dto);
-
-    @AfterMapping
-    default void mapTickets(EventDTO dto, @MappingTarget Events entity) {
-        if (dto.getTickets() != null) {
-            entity.setTickets(dto.getTickets().stream()
-                .map(TicketMapper.INSTANCE::toEntity)
-                .collect(Collectors.toSet()));
-        }
-    }
-
-    @AfterMapping
-    default void mapPerformers(EventDTO dto, @MappingTarget Events entity) {
-        if (dto.getPerformers() != null) {
-            entity.setPerformers(dto.getPerformers().stream()
-                .map(PerformerMapper.INSTANCE::toEntity)
-                .collect(Collectors.toSet()));
-        }
-    }
+    Events toEntity(EventDTO eventDTO);
 
     @Named("toDto")
-    @Mapping(target = "tickets", expression = "java(TicketMapper.INSTANCE.toDtoList(entity.getTickets()))")
-    @Mapping(target = "performers", expression = "java(PerformerMapper.INSTANCE.toDtoList(entity.getPerformers()))")
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "name", source = "name")
-    @Mapping(target = "description", source = "description")
-    @Mapping(target = "startDateTime", source = "startDateTime")
-    @Mapping(target = "endDateTime", source = "endDateTime")
-    @Mapping(target = "category", source = "category")
-    @Mapping(target = "location", source = "location")
+    @Mapping(target = "tickets", source = "tickets", qualifiedByName = "toTicketDtoList")
+    @Mapping(target = "performers", source = "performers", qualifiedByName = "toPerformerDtoList")
     @Mapping(target = "coverImageUrl", source = "coverImageUrl", qualifiedByName = "mapAttachmentsWithDeletedFlag")
     @Mapping(target = "imageUrl", source = "imageUrl", qualifiedByName = "mapAttachmentsWithDeletedFlag")
-    @Mapping(target = "instructions", source = "instructions")
-    @Mapping(target = "termsAndConditions", source = "termsAndConditions")
-    @Mapping(target = "creationTimestamp", source = "creationTimestamp")
-    @Mapping(target = "createdBy", source = "createdBy")
-    EventDTO toDto(Events entity);
+    @Mapping(target = "bookmarked", expression = "java(loggedInMember != null && entity.getBookmarkedBy().stream().anyMatch(m -> m.getId().equals(loggedInMember.getId())))")
+    EventDTO toDto(Events entity, @Context Member loggedInMember);
 
     @AfterMapping
     @Named("afterToDto")
-    default void afterToDto(Events entity, @MappingTarget EventDTO dto) {
+    default void afterToDto(Events entity, @MappingTarget EventDTO dto, @Context Member loggedInMember) {
         if (entity.getMember() != null) {
             dto.setCreatedBy(entity.getMember().getFirstName() + " " + entity.getMember().getLastName());
         }
     }
 
     @Named("toDtoList")
-    List<EventDTO> toDtoList(List<Events> entities);
+    default List<EventDTO> toDtoList(List<Events> entities, @Context Member loggedInMember) {
+        if (entities == null) {
+            return null;
+        }
+        return entities.stream()
+            .map(event -> toDto(event, loggedInMember))
+            .collect(Collectors.toList());
+    }
 
     @Named("toDtoListSet")
-    List<EventDTO> toDtoList(Set<Events> entities);
+    default List<EventDTO> toDtoList(Set<Events> entities, @Context Member loggedInMember) {
+        if (entities == null) {
+            return null;
+        }
+        return entities.stream()
+            .map(event -> toDto(event, loggedInMember))
+            .collect(Collectors.toList());
+    }
 
     @Named("toTicketDtoList")
-    default List<TicketDTO> toTicketDtoList(Set<Tickets> tickets) {
-        return TicketMapper.INSTANCE.toDtoList(tickets);
+    default List<TicketDTO> toTicketDtoList(List<Tickets> tickets) {
+        if (tickets == null) {
+            return null;
+        }
+        return tickets.stream()
+            .map(ticket -> {
+                TicketDTO dto = new TicketDTO();
+                dto.setId(ticket.getId());
+                dto.setName(ticket.getName());
+                dto.setDescription(ticket.getDescription());
+                dto.setPrice(ticket.getPrice());
+                // Quantity is not a field in Tickets entity
+                return dto;
+            })
+            .collect(Collectors.toList());
     }
 
     @Named("mapAttachmentsWithDeletedFlag")
     default List<AttachmentsDto> mapAttachmentsWithDeletedFlag(List<Attachments> attachments) {
-        return AttachmentsMapper.INSTANCE.toDtoList(attachments).stream()
-                .map(dto -> {
-                    dto.setDeleted(
-                            attachments.stream()
-                                    .filter(attachment -> attachment.getId().equals(dto.getId()))
-                                    .findFirst()
-                                    .map(Attachments::getIsDeleted)
-                                    .orElse(false)
-                    );
-                    return dto;
-                })
-                .collect(Collectors.toList());
+        if (attachments == null) {
+            return null;
+        }
+        
+        return attachments.stream()
+            .map(attachment -> {
+                AttachmentsDto dto = new AttachmentsDto();
+                dto.setId(attachment.getId());
+                dto.setFileName(attachment.getFileName());
+                dto.setContentType(attachment.getContentType());
+                dto.setUploadUrl(attachment.getUploadUrl());
+                dto.setUploaded(attachment.getUploaded());
+                dto.setDeleted(attachment.getIsDeleted() != null && attachment.getIsDeleted());
+                dto.setCreationTimestamp(attachment.getCreationTimestamp());
+                dto.setUpdateTimestamp(attachment.getUpdateTimestamp());
+                dto.setCreatedBy(attachment.getCreatedBy());
+                dto.setUpdatedBy(attachment.getUpdatedBy());
+                return dto;
+            })
+            .collect(Collectors.toList());
     }
 
     @Named("toPerformerDtoList")
-    default List<PerformerDTO> toPerformerDtoList(Set<Performers> performers) {
-        return PerformerMapper.INSTANCE.toDtoList(performers);
+    default List<PerformerDTO> toPerformerDtoList(List<Performers> performers) {
+        if (performers == null) {
+            return null;
+        }
+        return performers.stream()
+            .map(performer -> {
+                PerformerDTO dto = new PerformerDTO();
+                dto.setId(performer.getId());
+                dto.setName(performer.getName());
+                dto.setRole(performer.getRole());
+                dto.setImageUrl(performer.getImageUrl());
+                dto.setCreationTimestamp(performer.getCreationTimestamp());
+                dto.setUpdateTimestamp(performer.getUpdateTimestamp());
+                dto.setCreatedBy(performer.getCreatedBy());
+                dto.setUpdatedBy(performer.getUpdatedBy());
+                return dto;
+            })
+            .collect(Collectors.toList());
     }
 }

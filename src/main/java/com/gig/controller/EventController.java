@@ -95,13 +95,12 @@ public class EventController {
     @PutMapping("/{id}")
     @Operation(summary = "Update event", description = "Updates an existing event with new details")
     public ResponseEntity<BaseResponseDto> updateEvent(
-            @Parameter(description = "ID of the event to update")
             @PathVariable String id,
             @Parameter(description = "Updated event details")
-            @RequestBody EventDTO updatedEventDTO,
+            @RequestBody EventDTO eventDTO,
             HttpServletRequest request) {
-        BaseResponseDto updatedEvent = eventFacade.updateEvent(id, updatedEventDTO, request);
-        return ResponseEntity.ok(updatedEvent);
+        BaseResponseDto response = eventFacade.updateEvent(id, eventDTO, request);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
@@ -123,12 +122,43 @@ public class EventController {
         return ResponseEntity.ok(tickets);
     }
 
-    @GetMapping("/{id}/performers")
+    @GetMapping("/{eventId}/performers")
     @Operation(summary = "Get performers for event", description = "Fetches all performers for a specific event")
     public ResponseEntity<List<PerformerDTO>> getPerformersForEvent(
-            @Parameter(description = "ID of the event") @PathVariable String id,
+            @PathVariable String eventId,
             HttpServletRequest request) {
-        List<PerformerDTO> performers = eventFacade.getPerformersForEvent(id, request);
-        return ResponseEntity.ok(performers);
+        return ResponseEntity.ok(eventFacade.getPerformersForEvent(eventId, request));
+    }
+
+    @PostMapping("/{eventId}/bookmark/toggle")
+    @Operation(summary = "Toggle event bookmark", description = "Toggles the bookmark status of an event for the current user")
+    public ResponseEntity<BaseResponseDto> toggleEventBookmark(
+            @PathVariable String eventId,
+            HttpServletRequest request) {
+        return ResponseEntity.ok(eventFacade.toggleEventBookmark(eventId, request));
+    }
+
+    @DeleteMapping("/{eventId}/bookmark")
+    @Operation(summary = "Remove event bookmark", description = "Removes the bookmark from an event for the current user")
+    public ResponseEntity<BaseResponseDto> removeEventBookmark(
+            @PathVariable String eventId,
+            HttpServletRequest request) {
+        BaseResponseDto response = eventFacade.removeEventBookmark(eventId, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/bookmarks")
+    @Operation(summary = "Get bookmarked events", description = "Retrieves a list of events bookmarked by the current user")
+    public ResponseEntity<List<SimpleEventDTO>> getBookmarkedEvents(HttpServletRequest request) {
+        List<SimpleEventDTO> events = eventFacade.getBookmarkedEvents(request);
+        return ResponseEntity.ok(events);
+    }
+
+    @GetMapping("/{eventId}/is-bookmarked")
+    @Operation(summary = "Check if event is bookmarked", description = "Checks if the specified event is bookmarked by the current user")
+    public ResponseEntity<Boolean> isEventBookmarked(
+            @PathVariable String eventId,
+            HttpServletRequest request) {
+        return ResponseEntity.ok(eventFacade.isEventBookmarked(eventId, request));
     }
 }

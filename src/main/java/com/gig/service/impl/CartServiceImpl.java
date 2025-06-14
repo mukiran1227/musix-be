@@ -18,9 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
-
-import static org.apache.commons.collections4.ListUtils.emptyIfNull;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -73,8 +73,9 @@ public class CartServiceImpl implements CartService {
     }*/
 
     @Transactional
-    public Cart addTicketToCart(List<CartAddItemDTO> cartAddItemDTOs,Member loggedInMember) {
+    public Cart addTicketToCart(List<CartAddItemDTO> cartAddItemDTOs, Member loggedInMember) {
         Cart cart = getOrCreateCart(loggedInMember);
+        Set<CartItem> updatedItems = new HashSet<>();
 
         for (CartAddItemDTO dto : cartAddItemDTOs) {
             Tickets ticket = ticketRepository.findById(dto.getTicketId())
@@ -86,8 +87,8 @@ public class CartServiceImpl implements CartService {
                         CartItem newItem = new CartItem();
                         newItem.setCart(cart);
                         newItem.setTicket(ticket);
+                        newItem.setQuantity(0);
                         newItem.setUnitPrice(ticket.getPrice());
-                        newItem.setQuantity(0); // Start with 0 and add below
                         return newItem;
                     });
 
@@ -97,17 +98,30 @@ public class CartServiceImpl implements CartService {
             cartItem.setTotalPrice(newQuantity * cartItem.getUnitPrice());
 
             // Save cart item
-            cartItemRepository.save(cartItem);
+            CartItem savedItem = cartItemRepository.save(cartItem);
+            updatedItems.add(savedItem);
         }
 
-        List<CartItem> cartItems = cartItemRepository.findAllByCartIdNative(cart.getId().toString());
-
-        double totalAmount = emptyIfNull(cartItems).stream()
+        // Set the updated items to the cart
+        cart.setCartItems(updatedItems);
+        
+        // Calculate and update total amount
+        double totalAmount = updatedItems.stream()
                 .mapToDouble(CartItem::getTotalPrice)
                 .sum();
         cart.setTotalAmount(totalAmount);
 
-        return cartRepository.save(cart);
+        // Save the cart
+        Cart savedCart = cartRepository.save(cart);
+        
+        // Fetch the cart with its items using the repository method
+        return cartRepository.findByIdWithItems(savedCart.getId())
+                .orElseGet(() -> {
+                    // Fallback in case the query doesn't return the cart
+                    List<CartItem> cartItems = cartItemRepository.findAllByCartIdNative(savedCart.getId().toString());
+                    savedCart.setCartItems(new HashSet<>(cartItems));
+                    return savedCart;
+                });
     }
 
 
@@ -185,6 +199,43 @@ public class CartServiceImpl implements CartService {
             
         cart.setActive(false);
         cartRepository.save(cart);
+    }
+
+    @Transactional
+    public void clearCart(UUID cartId, Member member) {
+        // Find the cart with items and verify ownership
+        Cart cart = cartRepository.findById(cartId)
+            .orElseThrow(() -> new RuntimeException("Cart not found with id: " + cartId));
+            
+        if (!cart.getMember().getId().equals(member.getId())) {
+            throw new RuntimeException("Unauthorized: You do not have permission to clear this cart");
+        }
+        
+        try {
+            // First, get all cart item IDs
+            List<UUID> itemIds = cart.getCartItems().stream()
+                .map(CartItem::getId)
+                .collect(Collectors.toList());
+                
+            // Delete all cart items by ID to avoid version conflicts
+            if (!itemIds.isEmpty()) {
+                cartItemRepository.deleteAllByIdInBatch(itemIds);
+            }
+            
+            // Clear the items collection in memory
+            cart.getCartItems().clear();
+            
+            // Reset cart totals
+            cart.setTotalAmount(0.0);
+            cart.setTotalItems(0);
+            
+            // Save the cart
+            cartRepository.saveAndFlush(cart);
+        } catch (Exception e) {
+            // Log the error
+            System.err.println("Error clearing cart: " + e.getMessage());
+            throw new RuntimeException("Failed to clear cart: " + e.getMessage(), e);
+        }
     }
 
     public CartItem createOrUpdateCartItem(Cart cart, Tickets ticket, int quantity) {

@@ -2,10 +2,12 @@ package com.gig.controller;
 
 import com.gig.dto.CartAddItemDTO;
 import com.gig.dto.CartDTO;
+import com.gig.dto.OrderIdResponse;
 import com.gig.facade.TicketBookingFacade;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -33,14 +35,19 @@ public class CartController {
     }
 
     @PostMapping("/checkout")
-    public ResponseEntity<Void> checkoutCart(HttpServletRequest request) {
-        ticketBookingFacade.checkoutCart(request);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<OrderIdResponse> checkoutCart(HttpServletRequest request) {
+        return ResponseEntity.ok(ticketBookingFacade.checkoutCart(request));
     }
 
     @GetMapping("/current")
     public ResponseEntity<CartDTO> getCurrentCart(HttpServletRequest request) {
         CartDTO response = ticketBookingFacade.getCart(request);
+        return ResponseEntity.ok(response);
+    }
+    
+    @DeleteMapping("/clear")
+    public ResponseEntity<CartDTO> clearCart(HttpServletRequest request) {
+        CartDTO response = ticketBookingFacade.clearCart(request);
         return ResponseEntity.ok(response);
     }
 }

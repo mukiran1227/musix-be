@@ -26,7 +26,7 @@ public class Cart extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<CartItem> cartItems = new HashSet<>();
 
     private double totalAmount;
@@ -48,6 +48,11 @@ public class Cart extends BaseEntity {
     public void removeItem(CartItem item) {
         cartItems.remove(item);
         item.setCart(null);
+    }
+    
+    public void setTotalItems(int count) {
+        // This is a derived value, but we'll keep it for backward compatibility
+        // The actual count is always derived from cartItems.size()
     }
 
     public double calculateTotalAmount() {

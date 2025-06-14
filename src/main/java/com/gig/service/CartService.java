@@ -19,4 +19,12 @@ public interface CartService {
     CartItem createOrUpdateCartItem(Cart cart, Tickets ticket, int quantity);
 
     CartDTO getCartDTOWithItems(Member loggedInMember);
+    
+    /**
+     * Clears all items from the cart
+     * @param cartId ID of the cart to clear
+     * @param member The logged-in member for authorization
+     * @throws RuntimeException if cart is not found or member is not authorized
+     */
+    void clearCart(UUID cartId, Member member);
 }

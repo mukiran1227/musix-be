@@ -20,4 +20,5 @@ public class SimpleEventDTO {
     private String category;
     private double minPrice;
     private double maxPrice;
+    private boolean bookmarked;
 }

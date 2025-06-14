@@ -1,15 +1,12 @@
 package com.gig.config;
 
-import com.gig.mappers.EventMapper;
-import org.mapstruct.factory.Mappers;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 
-@Configuration
-public class MapperConfig {
-    
-    @Bean
-    public EventMapper eventMapper() {
-        return Mappers.getMapper(EventMapper.class);
-    }
+@Mapper(
+    componentModel = "spring",
+    unmappedTargetPolicy = ReportingPolicy.IGNORE
+)
+public interface MapperConfig {
+    // Configuration class for MapStruct mappers
 }

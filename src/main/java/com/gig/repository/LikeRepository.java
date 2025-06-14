@@ -37,4 +37,13 @@ public interface LikeRepository extends JpaRepository<Likes, UUID> {
             "INNER JOIN likes l ON l.id = pl.likes_id " +
             "WHERE p.id = :postId AND l.is_liked = true", nativeQuery = true)
     long countLikesByPostId(@Param("postId") String postId);
+    
+    @Query(value = "SELECT l.id, l.created_at, m.id as member_id, m.first_name, m.last_name, m.image_url " +
+            "FROM posts p " +
+            "INNER JOIN posts_likes pl ON p.id = pl.posts_id " +
+            "INNER JOIN likes l ON l.id = pl.likes_id " +
+            "INNER JOIN member m ON m.id = l.member_id " +
+            "WHERE p.id = :postId AND l.is_liked = true " +
+            "ORDER BY l.created_at DESC", nativeQuery = true)
+    List<LikeResponseDTO> findAllLikesByPostId(@Param("postId") String postId);
 }

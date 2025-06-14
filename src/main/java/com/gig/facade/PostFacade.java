@@ -10,6 +10,8 @@ import com.gig.dto.PostDto;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
+
 public interface PostFacade {
     ResponseEntity<PostDto> createPost(CreatePostDto createPostDto, HttpServletRequest request);
 
@@ -30,5 +32,8 @@ public interface PostFacade {
     ResponseEntity<PaginationDto> getCommentsByPostId(String postId, int limit, int offset, HttpServletRequest request);
 
     ResponseEntity<PageResponseDTO<LikeResponseDTO>> getLikesByPostId(String postId, int page, int size, HttpServletRequest request);
+    
+    ResponseEntity<List<LikeResponseDTO>> getAllLikesByPostId(String postId, HttpServletRequest request);
+    
     long getTotalLikes(String postId);
 }

@@ -15,18 +15,23 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity(name = "attachments")
-@EqualsAndHashCode(callSuper = true)
-public class Attachments extends BaseEntity{
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
+public class Attachments extends BaseEntity {
     @Id
     @UuidGenerator
     @JdbcTypeCode(Types.VARCHAR)
+    @EqualsAndHashCode.Include
     private UUID id;
+    
     @Column(name = "uploaded")
     private Boolean uploaded = Boolean.FALSE;
+    
     @Column(name = "file_name")
     private String fileName;
+    
     @Column(name = "content_type")
     private String contentType;
+    
     @Column(name = "upload_Url", columnDefinition = "TEXT")
     private String uploadUrl;
 }

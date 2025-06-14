@@ -1,12 +1,7 @@
 package com.gig.models;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,11 +19,13 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity(name = "events")
-@EqualsAndHashCode(callSuper = true)
-public class Events extends BaseEntity{
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
+public class Events extends BaseEntity {
+    
     @Id
     @UuidGenerator
     @JdbcTypeCode(Types.VARCHAR)
+    @EqualsAndHashCode.Include
     private UUID id;
     private String name;
     private String description;
@@ -36,20 +33,31 @@ public class Events extends BaseEntity{
     private LocalDateTime endDateTime;
     private String category;
     private String location;
-    @ManyToOne
+    
+    @ManyToOne(fetch = FetchType.LAZY)
     private Member member;
-    @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Attachments> coverImageUrl = new ArrayList<>();
-    @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Attachments> imageUrl = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-    private Set<Tickets> tickets = new HashSet<>();
+    private List<Tickets> tickets = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-    private Set<Performers> performers = new HashSet<>();
+    private List<Performers> performers = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(
+        name = "event_bookmarks",
+        joinColumns = @JoinColumn(name = "event_id"),
+        inverseJoinColumns = @JoinColumn(name = "member_id")
+    )
+    @JsonIgnore
+    private Set<Member> bookmarkedBy = new HashSet<>();
+    
     private String instructions;
     private String termsAndConditions;
-    @JdbcTypeCode(Types.VARCHAR)
-    private UUID createdBy;
 }

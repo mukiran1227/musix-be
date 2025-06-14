@@ -12,19 +12,25 @@ import com.gig.models.Member;
 import com.gig.repository.EventRepository;
 import com.gig.service.EventService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
-class EventServiceImpl implements EventService {
+public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
+    private final EventMapper eventMapper;
 
     private static final String EVENT_NOT_FOUND = "Event not found with id: %s";
     private static final String INVALID_DATE_RANGE = "End date must be after start date";
@@ -32,38 +38,71 @@ class EventServiceImpl implements EventService {
     private static final String INVALID_PERFORMERS = "Invalid performers provided";
 
     @Override
-    public EventDTO getEventById(String id) {
+    public EventDTO getEventById(String id, Member loggedInMember) {
         Events event = eventRepository.findByIdAndIsDeletedFalse(id);
         if (event == null) {
             throw new ApiException(String.format(EVENT_NOT_FOUND, id));
         }
-        EventDTO  eventDTO = EventMapper.INSTANCE.toDto(event);
-        EventMapper.INSTANCE.afterToDto(event,eventDTO);
+        EventDTO eventDTO = eventMapper.toDto(event, loggedInMember);
+        eventMapper.afterToDto(event, eventDTO, loggedInMember);
         return eventDTO;
-
     }
 
     @Override
-    public List<SimpleEventDTO> getAllEvents(int page, int size) {
+    public List<SimpleEventDTO> getAllEvents(int page, int size, Member loggedInMember) {
         int offset = Math.max(0, (page - 1) * size);
         List<Events> events = eventRepository.findAllByIsDeletedFalse(offset, size);
+        
+        // Early return if no logged in user or no events
+        if (loggedInMember == null || events.isEmpty()) {
+            return events.stream()
+                    .map(eventMapper::toSimpleEventDTO)
+                    .collect(Collectors.toList());
+        }
+        
+        // Fetch all bookmarked event IDs for the logged-in user in a single query
+        Set<UUID> bookmarkedEventIds = eventRepository.findBookmarkedEventIdsByMemberId(
+            loggedInMember.getId().toString()
+        );
+        
         return events.stream()
-                .map(EventMapper.INSTANCE::toSimpleEventDTO)
+                .map(event -> {
+                    SimpleEventDTO dto = eventMapper.toSimpleEventDTO(event);
+                    dto.setBookmarked(bookmarkedEventIds.contains(event.getId()));
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<SimpleEventDTO> getEventsByCategory(int page, int size, String category, String eventId) {
+    public List<SimpleEventDTO> getEventsByCategory(int page, int size, String category, String eventId, Member loggedInMember) {
         int offset = Math.max(0, (page - 1) * size);
-        List<Events> events = eventRepository.findByCategoryAndIsDeletedFalse(category, offset, size,eventId);
+        List<Events> events = eventRepository.findByCategoryAndIsDeletedFalse(category, offset, size, eventId);
+        
+        // Early return if no logged in user or no events
+        if (loggedInMember == null || events.isEmpty()) {
+            return events.stream()
+                    .map(eventMapper::toSimpleEventDTO)
+                    .collect(Collectors.toList());
+        }
+        
+        // Fetch all bookmarked event IDs for the logged-in user in a single query
+        Set<UUID> bookmarkedEventIds = eventRepository.findBookmarkedEventIdsByMemberId(
+            loggedInMember.getId().toString()
+        );
+        
         return events.stream()
-                .map(EventMapper.INSTANCE::toSimpleEventDTO)
+                .map(event -> {
+                    SimpleEventDTO dto = eventMapper.toSimpleEventDTO(event);
+                    dto.setBookmarked(bookmarkedEventIds.contains(event.getId()));
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
     @Override
-    public long countEventsByCategory(String category) {
-        return eventRepository.countByCategory(category);
+    public long countEventsByCategory(String category, String eventId) {
+        return eventRepository.countByCategory(category, eventId);
     }
 
     @Override
@@ -75,8 +114,25 @@ class EventServiceImpl implements EventService {
     public List<SimpleEventDTO> getUserEvents(int page, int size, Member loggedInMember) {
         int offset = Math.max(0, (page - 1) * size);
         List<Events> events = eventRepository.findByCreatedByAndIsDeletedFalse(loggedInMember.getId().toString(), offset, size);
+        
+        // Early return if no logged in user or no events
+        if (loggedInMember == null || events.isEmpty()) {
+            return events.stream()
+                    .map(eventMapper::toSimpleEventDTO)
+                    .collect(Collectors.toList());
+        }
+        
+        // Fetch all bookmarked event IDs for the logged-in user in a single query
+        Set<UUID> bookmarkedEventIds = eventRepository.findBookmarkedEventIdsByMemberId(
+            loggedInMember.getId().toString()
+        );
+        
         return events.stream()
-                .map(EventMapper.INSTANCE::toSimpleEventDTO)
+                .map(event -> {
+                    SimpleEventDTO dto = eventMapper.toSimpleEventDTO(event);
+                    dto.setBookmarked(bookmarkedEventIds.contains(event.getId()));
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -121,7 +177,7 @@ class EventServiceImpl implements EventService {
         validateTickets(eventDTO.getTickets());
         validatePerformers(eventDTO.getPerformers());
 
-        Events event = EventMapper.INSTANCE.toEntity(eventDTO);
+        Events event = eventMapper.toEntity(eventDTO);
         event.setMember(loggedInMember);
         event.setCreatedBy(loggedInMember.getId());
         event.setCreationTimestamp(LocalDateTime.now());
@@ -143,7 +199,7 @@ class EventServiceImpl implements EventService {
         if (existingEvent == null) {
             throw new ApiException(String.format(EVENT_NOT_FOUND, id));
         }
-        Events updatedEvent = EventMapper.INSTANCE.toEntity(updatedEventDTO);
+        Events updatedEvent = eventMapper.toEntity(updatedEventDTO);
 
         existingEvent.setName(updatedEvent.getName());
         existingEvent.setDescription(updatedEvent.getDescription());
@@ -173,7 +229,7 @@ class EventServiceImpl implements EventService {
     public List<TicketDTO> getTicketsForEvent(String eventId, Member loggedInMember) {
         try {
             Events event = eventRepository.findByIdAndIsDeletedFalse(eventId);
-            return EventMapper.INSTANCE.toTicketDtoList(event.getTickets());
+            return eventMapper.toTicketDtoList(event.getTickets());
         } catch (Exception e) {
             throw new ApiException("Failed to fetch tickets for event: " + e.getMessage(), e);
         }
@@ -183,7 +239,7 @@ class EventServiceImpl implements EventService {
     public List<PerformerDTO> getPerformersForEvent(String eventId) {
         try {
             Events event = eventRepository.findByIdAndIsDeletedFalse(eventId);
-            return EventMapper.INSTANCE.toPerformerDtoList(event.getPerformers());
+            return eventMapper.toPerformerDtoList(event.getPerformers());
         } catch (Exception e) {
             throw new ApiException("Failed to fetch performers for event: " + e.getMessage(), e);
         }
@@ -194,5 +250,98 @@ class EventServiceImpl implements EventService {
                 eventDTO.getStartDateTime().isAfter(eventDTO.getEndDateTime())) {
             throw new ApiException(INVALID_DATE_RANGE);
         }
+    }
+
+    @Override
+    public BaseResponseDto toggleEventBookmark(String eventId, Member member) {
+        BaseResponseDto response = new BaseResponseDto();
+        try {
+            Events event = eventRepository.findByIdAndIsDeletedFalse(eventId);
+            if (event == null) {
+                throw new ApiException(String.format(EVENT_NOT_FOUND, eventId));
+            }
+
+            // Check if bookmark already exists
+            boolean isBookmarked = event.getBookmarkedBy().contains(member);
+
+            if (isBookmarked) {
+                // Remove bookmark
+                event.getBookmarkedBy().remove(member);
+                response.setMessage("Event unbookmarked successfully");
+            } else {
+                // Add bookmark
+                event.getBookmarkedBy().add(member);
+                response.setMessage("Event bookmarked successfully");
+            }
+
+            eventRepository.save(event);
+        } catch (Exception e) {
+            response.setMessage(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public BaseResponseDto removeEventBookmark(String eventId, Member member) {
+        BaseResponseDto response = new BaseResponseDto();
+        try {
+            Events event = eventRepository.findByIdAndIsDeletedFalse(eventId);
+            if (event == null) {
+                throw new ApiException(String.format(EVENT_NOT_FOUND, eventId));
+            }
+
+            // Remove bookmark if it exists
+            boolean removed = event.getBookmarkedBy().remove(member);
+            if (removed) {
+                eventRepository.save(event);
+                response.setMessage("Bookmark removed successfully");
+            } else {
+                response.setMessage("Bookmark not found");
+            }
+        } catch (Exception e) {
+            response.setMessage(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SimpleEventDTO> getBookmarkedEvents(Member member) {
+        try {
+            // Fetch the member's bookmarked events
+            List<Events> bookmarkedEvents = eventRepository.findBookmarkedEventsByMemberId(member.getId().toString());
+
+            // Convert to SimpleEventDTO and ensure bookmarked flag is set to true
+            return bookmarkedEvents.stream()
+                    .map(event -> {
+                        SimpleEventDTO dto = eventMapper.toSimpleEventDTO(event);
+                        dto.setBookmarked(true);
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new ApiException("Failed to fetch bookmarked events: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Helper method to get the currently authenticated user
+     * @return the authenticated Member or null if not authenticated
+     */
+    private Member getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+            return (Member) authentication.getPrincipal();
+        }
+        return null;
+    }
+
+    @Override
+    public boolean isEventBookmarked(String eventId, Member member) {
+        Events event = eventRepository.findByIdAndIsDeletedFalse(eventId);
+        if (event == null) {
+            throw new ApiException(String.format(EVENT_NOT_FOUND, eventId));
+        }
+        return event.getBookmarkedBy().contains(member);
     }
 }

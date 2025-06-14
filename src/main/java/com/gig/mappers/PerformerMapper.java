@@ -3,17 +3,13 @@ package com.gig.mappers;
 import com.gig.dto.PerformerDTO;
 import com.gig.models.Performers;
 import org.mapstruct.Mapper;
-import org.mapstruct.Named;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.AfterMapping;
-import org.mapstruct.factory.Mappers;
 import org.mapstruct.Mapping;
+
 import java.util.List;
 import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface PerformerMapper {
-    PerformerMapper INSTANCE = Mappers.getMapper(PerformerMapper.class);
 
     @Mapping(target = "id", source = "id")
     @Mapping(target = "name", source = "name")

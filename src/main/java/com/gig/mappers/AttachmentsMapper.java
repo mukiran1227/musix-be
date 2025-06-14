@@ -3,7 +3,6 @@ package com.gig.mappers;
 import com.gig.dto.AttachmentsDto;
 import com.gig.models.Attachments;
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Mapping;
@@ -12,7 +11,6 @@ import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface AttachmentsMapper {
-    AttachmentsMapper INSTANCE = Mappers.getMapper(AttachmentsMapper.class);
 
     @Mapping(target = "id", source = "id")
     @Mapping(target = "uploaded", source = "uploaded")

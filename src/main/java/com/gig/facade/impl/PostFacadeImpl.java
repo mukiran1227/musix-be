@@ -254,6 +254,18 @@ public class PostFacadeImpl implements PostFacade {
     }
 
     @Override
+    public ResponseEntity<List<LikeResponseDTO>> getAllLikesByPostId(String postId, HttpServletRequest request) {
+        try {
+            applicationUtilities.getLoggedInUser(request);
+            List<LikeResponseDTO> likes = likeRepository.findAllLikesByPostId(postId);
+            return ResponseEntity.ok(likes);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
+    @Override
     public long getTotalLikes(String postId) {
         return likeRepository.countLikesByPostId(postId);
     }

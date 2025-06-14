@@ -26,5 +26,10 @@ public interface CartRepository extends JpaRepository<Cart, UUID> {
             "LEFT JOIN cart_items ci ON c.id = ci.cart_id " +
             "WHERE c.member_id = :memberId", nativeQuery = true)
     Cart findCartWithItems(@Param("memberId") String memberId);
+    
+    @Query(value = "SELECT c.* FROM carts c " +
+            "LEFT JOIN cart_items ci ON c.id = ci.cart_id " +
+            "WHERE c.id = :cartId", nativeQuery = true)
+    Optional<Cart> findByIdWithItems(@Param("cartId") UUID cartId);
 
 }

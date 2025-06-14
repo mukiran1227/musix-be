@@ -47,10 +47,8 @@ public class PostController {
     }
 
     @GetMapping("/{postId}/likes")
-    public ResponseEntity<PageResponseDTO<LikeResponseDTO>> getPostLikes(@PathVariable String postId, @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            HttpServletRequest request) {
-        return postFacade.getLikesByPostId(postId, page, size, request);
+    public ResponseEntity<List<LikeResponseDTO>> getPostLikes(@PathVariable String postId, HttpServletRequest request) {
+            return postFacade.getAllLikesByPostId(postId, request);
     }
 
     @PutMapping("/update-post")

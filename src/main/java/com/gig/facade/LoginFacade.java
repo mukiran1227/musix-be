@@ -23,5 +23,5 @@ public interface LoginFacade {
 
     ResponseEntity<BaseResponseDto> createCraft(List<CraftDto> craftDto);
 
-    ResponseEntity<BaseResponseDto> verifyOtp(VerifyRequestDto verifyRequest);
+    ResponseEntity<LoginResponseDto> verifyOtp(VerifyRequestDto verifyRequest);
 }

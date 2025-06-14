@@ -2,6 +2,7 @@ package com.gig.dto;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -24,4 +25,5 @@ public class EventDTO {
     private String termsAndConditions;
     private LocalDateTime creationTimestamp;
     private String createdBy;
+    private Boolean bookmarked = false;
 }

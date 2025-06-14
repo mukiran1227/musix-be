@@ -2,10 +2,10 @@ package com.gig.facade;
 
 import com.gig.dto.BaseResponseDto;
 import com.gig.dto.EventDTO;
+import com.gig.dto.PageResponseDTO;
+import com.gig.dto.PerformerDTO;
 import com.gig.dto.SimpleEventDTO;
 import com.gig.dto.TicketDTO;
-import com.gig.dto.PerformerDTO;
-import com.gig.dto.PageResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
@@ -22,4 +22,10 @@ public interface EventFacade {
     List<TicketDTO> getTicketsForEvent(String eventId, HttpServletRequest request);
     List<PerformerDTO> getPerformersForEvent(String eventId, HttpServletRequest request);
     PageResponseDTO<SimpleEventDTO> getEventsByCategory(int page, int size, String category, String eventId, HttpServletRequest request);
+    
+    // Bookmark related methods
+    BaseResponseDto toggleEventBookmark(String eventId, HttpServletRequest request);
+    List<SimpleEventDTO> getBookmarkedEvents(HttpServletRequest request);
+    boolean isEventBookmarked(String eventId, HttpServletRequest request);
+    BaseResponseDto removeEventBookmark(String eventId, HttpServletRequest request);
 }

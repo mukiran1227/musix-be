@@ -65,7 +65,7 @@ public class LoginController {
     }
 
     @PostMapping(value = "/verify")
-    public ResponseEntity<BaseResponseDto> verifyUserOtp(@RequestBody VerifyRequestDto verifyRequest) {
+    public ResponseEntity<LoginResponseDto> verifyUserOtp(@RequestBody VerifyRequestDto verifyRequest) {
         return loginFacade.verifyOtp(verifyRequest);
     }
 

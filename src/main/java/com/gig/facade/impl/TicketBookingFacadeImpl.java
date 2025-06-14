@@ -6,10 +6,13 @@ import com.gig.dto.CartDTO;
 import com.gig.dto.CartItemDTO;
 import com.gig.dto.OrderDTO;
 import com.gig.dto.TicketDTO;
+import com.gig.dto.OrderIdResponse;
 import com.gig.facade.TicketBookingFacade;
 import com.gig.models.Cart;
 import com.gig.models.Member;
 import com.gig.models.Order;
+import com.gig.exception.EmptyCartException;
+import com.gig.models.*;
 import com.gig.service.CartService;
 import com.gig.service.OrderService;
 import jakarta.persistence.Table;
@@ -63,11 +66,16 @@ public class TicketBookingFacadeImpl implements TicketBookingFacade {
 
 
     @Override
-    public OrderDTO checkoutCart(HttpServletRequest request) {
+    public OrderIdResponse checkoutCart(HttpServletRequest request) {
         Member loggedInMember = applicationUtilities.getLoggedInUser(request);
         Cart cart = cartService.getCartByMember(loggedInMember);
+        
+        if (cart.getCartItems() == null || cart.getCartItems().isEmpty()) {
+            throw new EmptyCartException("Cannot checkout: Cart is empty");
+        }
+        
         Order order = orderService.createOrder(cart, loggedInMember);
-        return new OrderDTO(order);
+        return new OrderIdResponse(order.getId());
     }
 
     @Override
@@ -125,5 +133,14 @@ public class TicketBookingFacadeImpl implements TicketBookingFacade {
             })
             .collect(Collectors.toList());*/
         return null;
+    }
+    
+    @Override
+    @Transactional
+    public CartDTO clearCart(HttpServletRequest request) {
+        Member loggedInMember = applicationUtilities.getLoggedInUser(request);
+        Cart cart = cartService.getCartByMember(loggedInMember);
+        cartService.clearCart(cart.getId(), loggedInMember);
+        return new CartDTO(cart);
     }
 }
