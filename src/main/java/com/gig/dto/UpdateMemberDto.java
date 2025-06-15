@@ -15,7 +15,6 @@ public class UpdateMemberDto extends BaseResponseDto{
     private String lastName;
     private String emailAddress;
     private String location;
-    private Boolean isVerified=Boolean.FALSE;
     private String imageUrl;
     private String bio;
     private String memberType;

@@ -56,7 +56,7 @@ public interface EventRepository extends JpaRepository<Events, UUID> {
     @Query(value = """
         SELECT e.* FROM events e 
         INNER JOIN event_bookmarks eb ON e.id = eb.event_id
-        WHERE eb.member_id = :memberId::uuid 
+        WHERE eb.member_id = :memberId
         AND e.is_deleted = false
         """, nativeQuery = true)
     List<Events> findBookmarkedEventsByMemberId(@Param("memberId") String memberId);
