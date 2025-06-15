@@ -22,4 +22,5 @@ public class MemberDto extends BaseResponseDto{
     private String memberType;
     private String username;
     private String craft;
+    private Boolean isFollowing =Boolean.FALSE;
 }

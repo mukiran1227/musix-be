@@ -15,6 +15,7 @@ import com.gig.exceptions.ApiException;
 import com.gig.facade.MemberFacade;
 import com.gig.mappers.MemberMapper;
 import com.gig.models.Craft;
+import com.gig.models.Follow;
 import com.gig.models.Login;
 import com.gig.models.Member;
 import com.gig.repository.CraftRepository;
@@ -113,28 +114,31 @@ public class MemberFacadeImpl implements MemberFacade {
     public ResponseEntity<MemberDto> getMember(String memberId, HttpServletRequest request) {
         MemberDto memberDto = new MemberDto();
         try{
-            Member member ;
-            member = applicationUtilities.getLoggedInUser(request);
-            if(StringUtils.isNotEmpty(memberId)){
-                member = memberRepository.findByIdAndIsDeleted(memberId,false);
-                if(ObjectUtils.isNotEmpty(member)){
-                    memberDto = MemberMapper.INSTANCE.memberEntityToDto(member);
-                }
+            Member loggedInMember = applicationUtilities.getLoggedInUser(request);
+            Member memberToFetch;
+            if(StringUtils.isNotEmpty(memberId)) {
+                memberToFetch = memberRepository.findByIdAndIsDeleted(memberId, false);
             }else {
-                memberDto = MemberMapper.INSTANCE.memberEntityToDto(member);
+                memberToFetch = loggedInMember;
             }
-            if(ObjectUtils.isNotEmpty(memberDto)){
+            if(ObjectUtils.isNotEmpty(memberToFetch)){
+                memberDto = MemberMapper.INSTANCE.memberEntityToDto(memberToFetch);
                 // Get followers count
-                int followerCount = followRepository.fetchFollowersCount(member.getId().toString());
+                int followerCount = followRepository.fetchFollowersCount(memberToFetch.getId().toString());
                 memberDto.setFollowersCount(followerCount);
 
                 // Get following count
-                int followingCount = followRepository.fetchFollowingCount(member.getId().toString());
+                int followingCount = followRepository.fetchFollowingCount(memberToFetch.getId().toString());
                 memberDto.setFollowingCount(followingCount);
 
                 // Get post count
-                int postCount = postsRepository.countByMemberIdAndIsDeletedFalse(memberId);
+                int postCount = postsRepository.countByMemberIdAndIsDeletedFalse(memberToFetch.getId().toString());
                 memberDto.setPostCount(postCount);
+
+                if (StringUtils.isNotEmpty(memberId) && !loggedInMember.getId().toString().equals(memberId)) {
+                    Follow isFollowing = followRepository.checkIsFollowing(loggedInMember.getId().toString(), memberId);
+                    memberDto.setIsFollowing(isFollowing != null);
+                }
 
                 /*if(ObjectUtils.isNotEmpty(memberDto.getCraft())){
                     Craft craft = craftRepository.findByIdAndIsDeleted(memberDto.getCraft());
