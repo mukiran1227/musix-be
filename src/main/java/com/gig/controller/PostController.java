@@ -77,8 +77,8 @@ public class PostController {
     }
 
     @GetMapping("/get-loggedIn-user-posts")
-    public ResponseEntity<PaginationDto> getLoggedInUserPosts(@RequestParam(value = "limit") int limit, @RequestParam(value = "offset") int offset, HttpServletRequest request){
-        return postFacade.getLoggedInUserPosts(limit,offset,request);
+    public ResponseEntity<PaginationDto> getLoggedInUserPosts(@RequestParam(value = "limit") int limit, @RequestParam(value = "offset") int offset,@RequestParam(value = "memberId") String memberId, HttpServletRequest request){
+        return postFacade.getLoggedInUserPosts(limit,offset,memberId,request);
     }
 
     @GetMapping("/comments/postId")

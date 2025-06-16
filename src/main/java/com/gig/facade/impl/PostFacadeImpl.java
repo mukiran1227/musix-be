@@ -181,11 +181,11 @@ public class PostFacadeImpl implements PostFacade {
     }
 
     @Override
-    public ResponseEntity<PaginationDto> getLoggedInUserPosts(int limit, int offset, HttpServletRequest request) {
+    public ResponseEntity<PaginationDto> getLoggedInUserPosts(int limit, int offset, String memberId, HttpServletRequest request) {
         PaginationDto paginationDto = new PaginationDto();
         try{
            Member loggedInMember = applicationUtilities.getLoggedInUser(request);
-           List<Posts> posts = postsRepository.findByMemberId(loggedInMember.getId().toString(),limit,offset);
+           List<Posts> posts = postsRepository.findByMemberId(memberId,limit,offset);
             List<PostDto> postDtoList = emptyIfNull(posts).stream()
                     .map(post -> postsServiceImpl.setPostDetails(loggedInMember, post))
                     .toList();
