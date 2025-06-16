@@ -2,6 +2,7 @@ package com.gig.service.impl;
 
 import com.gig.dto.BaseResponseDto;
 import com.gig.dto.EventDTO;
+import com.gig.dto.PageResponseDTO;
 import com.gig.dto.PerformerDTO;
 import com.gig.dto.SimpleEventDTO;
 import com.gig.dto.TicketDTO;
@@ -12,12 +13,10 @@ import com.gig.models.Member;
 import com.gig.repository.EventRepository;
 import com.gig.service.EventService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -79,7 +78,7 @@ public class EventServiceImpl implements EventService {
         int offset = Math.max(0, (page - 1) * size);
         List<Events> events = eventRepository.findByCategoryAndIsDeletedFalse(category, offset, size, eventId);
         
-        // Early return if no logged in user or no events
+        // Early return if no logged-in user or no events
         if (loggedInMember == null || events.isEmpty()) {
             return events.stream()
                     .map(eventMapper::toSimpleEventDTO)
@@ -322,18 +321,6 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    /**
-     * Helper method to get the currently authenticated user
-     * @return the authenticated Member or null if not authenticated
-     */
-    private Member getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-            return (Member) authentication.getPrincipal();
-        }
-        return null;
-    }
-
     @Override
     public boolean isEventBookmarked(String eventId, Member member) {
         Events event = eventRepository.findByIdAndIsDeletedFalse(eventId);
@@ -341,5 +328,68 @@ public class EventServiceImpl implements EventService {
             throw new ApiException(String.format(EVENT_NOT_FOUND, eventId));
         }
         return event.getBookmarkedBy().contains(member);
+    }
+
+    @Override
+    public PageResponseDTO<SimpleEventDTO> discoverEvents(int page, int size, String location, boolean upcomingOnly, Member followedByMember) {
+        
+        // Calculate offset for pagination
+        int offset = page * size;
+        
+        // Get events from repository
+        List<Events> events = eventRepository.discoverEvents(offset, size, location, upcomingOnly, followedByMember != null ? followedByMember.getId().toString() : null);
+        
+        // Get total count for pagination
+        long totalElements = eventRepository.countDiscoverEvents(
+                location, 
+                upcomingOnly, 
+                followedByMember != null ? followedByMember.getId().toString() : null
+        );
+        
+        // Convert to DTOs
+        List<SimpleEventDTO> eventDTOs = events.stream()
+                .map(event -> {
+                    SimpleEventDTO dto = eventMapper.toSimpleEventDTO(event);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+        
+        // Create and return paginated response
+        PageResponseDTO<SimpleEventDTO> response = new PageResponseDTO<>();
+        response.setContent(eventDTOs);
+        response.setPageNumber(page);
+        response.setPageSize(size);
+        response.setTotalElements(totalElements);
+        response.setTotalPages((int) Math.ceil((double) totalElements / size));
+        response.setLast((page + 1) * size >= totalElements);
+        return response;
+    }
+    
+    @Override
+    public PageResponseDTO<SimpleEventDTO> searchEvents(int page, int size, String category, String location, LocalDate startDate, LocalDate endDate, Double minPrice, Double maxPrice, String searchTerm, Member loggedInMember) {
+            
+        // Calculate offset for pagination
+        int offset = page * size;
+        
+        // Get events from repository with all filters
+        List<Events> events = eventRepository.searchEvents(category, location, startDate, endDate, minPrice, maxPrice, searchTerm, offset, size);
+        
+        // Get total count for pagination
+        long totalElements = eventRepository.countSearchEvents(category, location, startDate, endDate, minPrice, maxPrice, searchTerm);
+        
+        // Convert to DTOs
+        List<SimpleEventDTO> eventDTOs = events.stream()
+                .map(eventMapper::toSimpleEventDTO)
+                .collect(Collectors.toList());
+        
+        // Create and return paginated response
+        PageResponseDTO<SimpleEventDTO> response = new PageResponseDTO<>();
+        response.setContent(eventDTOs);
+        response.setPageNumber(page);
+        response.setPageSize(size);
+        response.setTotalElements(totalElements);
+        response.setTotalPages((int) Math.ceil((double) totalElements / size));
+        response.setLast((page + 1) * size >= totalElements);
+        return response;
     }
 }

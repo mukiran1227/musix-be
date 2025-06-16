@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -26,9 +27,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
-
+/**
+ * EventController
+ */
 @RestController
 @RequestMapping("/api/v1/events")
 @CrossOrigin
@@ -89,6 +93,36 @@ public class EventController {
             @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
         PageResponseDTO<SimpleEventDTO> events = eventFacade.getUserEvents(page, size, request);
+        return ResponseEntity.ok(events);
+    }
+
+    @GetMapping("/discover")
+    @Operation(summary = "Discover events", description = "Fetches events based on location, upcoming status, and followed users")
+    public ResponseEntity<PageResponseDTO<SimpleEventDTO>> discoverEvents(
+            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Location to search near (e.g., 'New York')") @RequestParam(required = false) String location,
+            @Parameter(description = "Only show upcoming events") @RequestParam(defaultValue = "false") boolean upcomingOnly,
+            @Parameter(description = "Only show events from followed users") @RequestParam(defaultValue = "false") boolean followingOnly,
+            HttpServletRequest request) {
+        PageResponseDTO<SimpleEventDTO> events = eventFacade.discoverEvents(page, size, location, upcomingOnly, followingOnly, request);
+        return ResponseEntity.ok(events);
+    }
+
+    @Operation(summary = "Search events with multiple filters")
+    @GetMapping("/search")
+    public ResponseEntity<PageResponseDTO<SimpleEventDTO>> searchEvents(
+            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Category to filter by") @RequestParam(required = false) String category,
+            @Parameter(description = "Location to filter by") @RequestParam(required = false) String location,
+            @Parameter(description = "Start date to filter from (ISO date format: yyyy-MM-dd)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @Parameter(description = "End date to filter to (ISO date format: yyyy-MM-dd)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @Parameter(description = "Minimum ticket price") @RequestParam(required = false) Double minPrice,
+            @Parameter(description = "Maximum ticket price") @RequestParam(required = false) Double maxPrice,
+            @Parameter(description = "Search term for name, location, or description") @RequestParam(required = false) String searchTerm,
+            HttpServletRequest request) {
+        PageResponseDTO<SimpleEventDTO> events = eventFacade.searchEvents(page, size, category, location, startDate, endDate, minPrice, maxPrice, searchTerm, request);
         return ResponseEntity.ok(events);
     }
 

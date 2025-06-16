@@ -13,6 +13,7 @@ import com.gig.service.EventService;
 import com.gig.applicationUtilities.ApplicationUtilities;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -122,7 +123,7 @@ public class EventFacadeImpl implements EventFacade {
     @Override
     public List<PerformerDTO> getPerformersForEvent(String eventId, HttpServletRequest request) {
         try {
-            Member loggedInMember = applicationUtilities.getLoggedInUser(request);
+            // No need to get the logged-in user for this operation
             return eventService.getPerformersForEvent(eventId);
         } catch (Exception ex) {
             throw new ApiException(ex.getMessage(), ex);
@@ -155,17 +156,27 @@ public class EventFacadeImpl implements EventFacade {
 
     @Override
     public List<SimpleEventDTO> getBookmarkedEvents(HttpServletRequest request) {
+        Member loggedInMember = applicationUtilities.getLoggedInUser(request);
+        return eventService.getBookmarkedEvents(loggedInMember);
+    }
+    
+    @Override
+    public PageResponseDTO<SimpleEventDTO> discoverEvents(int page, int size, String location, boolean upcomingOnly, boolean followingOnly, HttpServletRequest request) {
         try {
             Member loggedInMember = applicationUtilities.getLoggedInUser(request);
-            if (loggedInMember == null) {
-                throw new ApiException("User not authenticated");
-            }
-            List<SimpleEventDTO> events = eventService.getBookmarkedEvents(loggedInMember);
-            // Since these are bookmarked events, we know they're all bookmarked
-            events.forEach(event -> event.setBookmarked(true));
-            return events;
+            return eventService.discoverEvents(page, size, location, upcomingOnly, followingOnly ? loggedInMember : null);
         } catch (Exception ex) {
             throw new ApiException("Failed to retrieve bookmarked events: " + ex.getMessage(), ex);
+        }
+    }
+    
+    @Override
+    public PageResponseDTO<SimpleEventDTO> searchEvents(int page, int size, String category, String location, LocalDate startDate, LocalDate endDate, Double minPrice, Double maxPrice, String searchTerm, HttpServletRequest request) {
+        try {
+            Member loggedInMember = applicationUtilities.getLoggedInUser(request);
+            return eventService.searchEvents(page, size, category, location, startDate, endDate, minPrice, maxPrice, searchTerm, loggedInMember);
+        } catch (Exception ex) {
+            throw new ApiException("Failed to search events: " + ex.getMessage(), ex);
         }
     }
 
