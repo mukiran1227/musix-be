@@ -15,5 +15,6 @@ public class CreatePostDto {
     private String description;
     private String location;
     private Set<UUID> taggedMembers = new HashSet<>();
+    private String size;
     private List<AttachmentsDto> attachments = new ArrayList<>();
 }

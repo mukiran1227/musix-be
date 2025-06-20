@@ -15,6 +15,8 @@ public class EventDTO {
     private String description;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
+    private String address;
+    private String googleMapLink;
     private String category;
     private String location;
     private List<AttachmentsDto> coverImageUrl;

@@ -13,6 +13,8 @@ public class SimpleEventDTO {
     private UUID id;
     private String name;
     private String description;
+    private String address;
+    private String googleMapLink;
     private List<AttachmentsDto> coverImageUrl;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;

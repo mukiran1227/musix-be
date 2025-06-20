@@ -60,6 +60,7 @@ public class PostsServiceImpl implements PostService {
         try{
             Posts posts = new Posts();
             posts.setDescription(createPostDto.getDescription());
+            posts.setSize(createPostDto.getSize());
             posts.setLocation(createPostDto.getLocation());
             List<Attachments> attachmentsList = emptyIfNull(createPostDto.getAttachments()).stream()
                     .map(dto -> {

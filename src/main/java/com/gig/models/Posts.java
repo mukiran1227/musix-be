@@ -34,6 +34,7 @@ public class Posts extends BaseEntity{
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
     private String location;
+    private String size;
     @OneToMany(cascade = CascadeType.ALL)
     private List<Attachments> attachments = new ArrayList<>();
     @ManyToOne

@@ -14,6 +14,7 @@ import java.util.UUID;
 public class PostDto extends BaseResponseDto{
     private UUID id;
     private String description;
+    private String size;
     private LocalDateTime creationTimestamp;
     private List<AttachmentsDto> attachments = new ArrayList<>();
     private Set<TaggedMemberDto> taggedMembers;

@@ -33,7 +33,8 @@ public class Events extends BaseEntity {
     private LocalDateTime endDateTime;
     private String category;
     private String location;
-    
+    private String address;
+    private String googleMapLink;
     @ManyToOne(fetch = FetchType.LAZY)
     private Member member;
     

@@ -16,7 +16,7 @@ public interface EventMapper extends com.gig.config.MapperConfig {
     @Named("toSimpleEventDTO")
     @Mapping(target = "minPrice", expression = "java(events.getTickets().stream().mapToDouble(t -> t.getPrice()).min().orElse(0.0))")
     @Mapping(target = "maxPrice", expression = "java(events.getTickets().stream().mapToDouble(t -> t.getPrice()).max().orElse(0.0))")
-    SimpleEventDTO toSimpleEventDTO(Events events);
+    SimpleEventDTO  toSimpleEventDTO(Events events);
 
     @Mapping(target = "minPrice", expression = "java(eventDTO.getTickets().stream().mapToDouble(t -> t.getPrice()).min().orElse(0.0))")
     @Mapping(target = "maxPrice", expression = "java(eventDTO.getTickets().stream().mapToDouble(t -> t.getPrice()).max().orElse(0.0))")
